@@ -1,0 +1,594 @@
+/* =============================================
+   SPARK SIDEBAR v6 — Refined Dark + Blue & Gold
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --s-bg: #13161c;
+  --s-surface: #1a1e27;
+  --s-hover: #212733;
+  --s-border: rgba(255,255,255,0.06);
+  --s-text-muted: #4b5468;
+  --s-text: #8892a4;
+  --s-text-bright: #e2e6ed;
+  --s-blue: #3b82f6;
+  --s-blue-soft: rgba(59,130,246,0.08);
+  --s-blue-glow: rgba(59,130,246,0.15);
+  --s-gold: #f5b731;
+  --s-gold-soft: rgba(245,183,49,0.10);
+  --s-radius: 10px;
+  --s-t: 0.18s ease;
+  --s-font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ── Font — ONLY on text elements, never on <i> icon tags ── */
+#sidebar-v2 .nav-title,
+#sidebar-v2 .hl_switcher-loc-name,
+#sidebar-v2 .hl_switcher-loc-city,
+#sidebar-v2 .hl_text-overflow,
+#sidebar-v2 .search-placeholder,
+#sidebar-v2 .search-shortcut,
+.spark-folder-label,
+.spark-submenu a {
+  font-family: var(--s-font) !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+/* ── Sidebar Background ── */
+.sidebar-v2-location #sidebar-v2 .default-bg-color,
+.sidebar-v2-location #sidebar-v2.default-bg-color,
+.sidebar-v2-agency #sidebar-v2 .default-bg-color,
+.sidebar-v2-agency #sidebar-v2.default-bg-color,
+.v2-open #sidebar-v2 {
+  background: var(--s-bg) !important;
+}
+
+/* ── Overflow — sidebar + wrappers must be visible for dropdowns (account switcher, quick actions) ── */
+#sidebar-v2,
+#sidebar-v2 .lead-connector,
+#sidebar-v2 .relative {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+/* Hide horizontal scrollbars inside nav containers only */
+#sidebar-v2 .hl_nav-header,
+#sidebar-v2 .hl_nav-header nav,
+#sidebar-v2 .hl_nav-settings,
+#sidebar-v2 .hl_nav-settings nav,
+#sidebar-v2 .hl_nav-header-without-footer,
+#sidebar-v2 .hl_nav-header-without-footer nav {
+  overflow-x: hidden !important;
+}
+
+/* ── Logo — centered ── */
+#sidebar-v2 .agency-logo-container {
+  padding: 12px 0 6px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+#sidebar-v2 img.agency-logo {
+  content: url('https://assets.cdn.filesafe.space/efZEjK6PqtPGDHqB2vV6/media/67fd6cd5131f1be412b5955b.png') !important;
+  max-width: 56px !important;
+  height: 56px !important;
+  width: 56px !important;
+  object-fit: contain !important;
+  filter: none !important;
+  display: block !important;
+  margin: 0 auto !important;
+  transition: transform 0.2s ease !important;
+}
+#sidebar-v2 img.agency-logo:hover {
+  transform: scale(1.06) !important;
+}
+
+/* ── Location Switcher ── */
+#location-switcher-sidbar-v2 {
+  background: var(--s-surface) !important;
+  border: 1px solid var(--s-border) !important;
+  border-radius: var(--s-radius) !important;
+  margin: 6px 12px !important;
+  padding: 8px 10px !important;
+  transition: background var(--s-t), border-color var(--s-t) !important;
+}
+#location-switcher-sidbar-v2:hover {
+  background: var(--s-hover) !important;
+  border-color: rgba(59,130,246,0.12) !important;
+}
+#location-switcher-sidbar-v2 .hl_switcher-loc-name { color: var(--s-text-bright) !important; font-weight: 600 !important; font-size: 12.5px !important; }
+#location-switcher-sidbar-v2 .hl_switcher-loc-city { color: var(--s-text-muted) !important; font-size: 10.5px !important; }
+#location-switcher-sidbar-v2 .hl_location_icon rect { fill: var(--s-gold) !important; fill-opacity: 0.12 !important; }
+#location-switcher-sidbar-v2 .hl_location_icon path { stroke: var(--s-gold) !important; }
+
+/* ── Search + Quick Actions Row ── */
+#sidebar-v2 .flex.mb-4 {
+  margin: 0 12px 10px !important;
+  padding: 0 !important;
+  gap: 6px !important;
+  background: none !important;
+  border: none !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  height: auto !important;
+}
+
+/* Search bar */
+#globalSearchOpener {
+  flex: 1 !important;
+  background: var(--s-surface) !important;
+  border: 1px solid var(--s-border) !important;
+  border-radius: var(--s-radius) !important;
+  padding: 8px 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: border-color var(--s-t), background var(--s-t) !important;
+  width: auto !important;
+}
+#globalSearchOpener:hover {
+  border-color: rgba(59,130,246,0.15) !important;
+  background: var(--s-hover) !important;
+}
+#globalSearchOpener .search-placeholder {
+  color: var(--s-text) !important;
+  font-size: 12.5px !important;
+  opacity: 0.6 !important;
+}
+#globalSearchOpener .search-shortcut {
+  color: var(--s-text-muted) !important;
+  opacity: 0.5 !important;
+  font-size: 10px !important;
+  border: 1px solid var(--s-border) !important;
+  border-radius: 4px !important;
+  padding: 1px 5px !important;
+  background: rgba(255,255,255,0.03) !important;
+}
+#sidebar-v2 .search-icon {
+  color: var(--s-text) !important;
+  opacity: 0.5 !important;
+}
+
+/* Quick Actions button */
+#quickActions {
+  background: var(--s-surface) !important;
+  border: 1px solid var(--s-border) !important;
+  border-radius: var(--s-radius) !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: border-color var(--s-t), background var(--s-t) !important;
+}
+#quickActions:hover {
+  border-color: rgba(245,183,49,0.15) !important;
+  background: var(--s-hover) !important;
+}
+#quickActions img {
+  opacity: 0.45 !important;
+  transition: opacity var(--s-t) !important;
+  filter: brightness(1.5) !important;
+}
+#quickActions:hover img {
+  opacity: 0.8 !important;
+}
+
+/* ══════════════════════════════════════════
+   COLLAPSED SIDEBAR — when not .w-56
+   ══════════════════════════════════════════ */
+
+/* Logo — smaller, centered */
+#sidebar-v2:not(.w-56) .agency-logo-container {
+  padding: 10px 0 4px !important;
+}
+#sidebar-v2:not(.w-56) img.agency-logo {
+  height: 30px !important;
+  width: 30px !important;
+  max-width: 30px !important;
+}
+
+/* Location switcher — icon only */
+#sidebar-v2:not(.w-56) #location-switcher-sidbar-v2 {
+  margin: 4px 6px !important;
+  padding: 6px !important;
+  justify-content: center !important;
+}
+#sidebar-v2:not(.w-56) #location-switcher-sidbar-v2 .hl_location-text,
+#sidebar-v2:not(.w-56) #location-switcher-sidbar-v2 .switcher-caret-holder,
+#sidebar-v2:not(.w-56) #location-switcher-sidbar-v2 .w-36 {
+  display: none !important;
+}
+#sidebar-v2:not(.w-56) #location-switcher-sidbar-v2 .hl_location_icon {
+  margin: 0 auto !important;
+}
+
+/* Search + Quick Actions — stack, icon only */
+#sidebar-v2:not(.w-56) .flex.mb-4 {
+  flex-direction: column !important;
+  margin: 0 6px 6px !important;
+  gap: 4px !important;
+}
+#sidebar-v2:not(.w-56) #globalSearchOpener {
+  padding: 7px !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+#sidebar-v2:not(.w-56) #globalSearchOpener .search-placeholder,
+#sidebar-v2:not(.w-56) #globalSearchOpener .search-shortcut,
+#sidebar-v2:not(.w-56) #globalSearchOpener > div > div:last-child {
+  display: none !important;
+}
+#sidebar-v2:not(.w-56) #globalSearchOpener .search-icon {
+  margin: 0 auto !important;
+}
+#sidebar-v2:not(.w-56) #quickActions {
+  width: 100% !important;
+  min-width: auto !important;
+  padding: 7px !important;
+}
+
+/* Menu items — center icons, hide text */
+#sidebar-v2:not(.w-56) .hl_nav-header nav > a,
+#sidebar-v2:not(.w-56) .hl_nav-settings nav > a {
+  justify-content: center !important;
+  padding: 9px 0 !important;
+  margin: 0 4px !important;
+}
+
+/* Folder toggle — just arrow, no label */
+#sidebar-v2:not(.w-56) .spark-folder-toggle {
+  justify-content: center !important;
+  padding: 8px 0 !important;
+  margin: 2px 4px !important;
+}
+#sidebar-v2:not(.w-56) .spark-folder-label {
+  display: none !important;
+}
+#sidebar-v2:not(.w-56) .spark-folder-chevron {
+  margin-right: 0 !important;
+}
+
+/* Sub-menus — hide in collapsed */
+#sidebar-v2:not(.w-56) .spark-submenu {
+  display: none !important;
+}
+
+/* Expand buttons — hide in collapsed */
+#sidebar-v2:not(.w-56) .spark-expand-btn {
+  display: none !important;
+}
+
+/* Collapse button positioning fix for narrow sidebar */
+#sidebar-v2:not(.w-56) > .absolute.z-50 {
+  right: -14px !important;
+}
+
+/* ── Nav Container ── */
+.hl_nav-header > nav {
+  display: flex !important;
+  flex-flow: column nowrap !important;
+  gap: 2px !important;
+  padding: 0 4px !important;
+}
+
+/* ── Menu Items ── */
+#sidebar-v2 .hl_nav-header nav > a,
+#sidebar-v2 .hl_nav-settings nav > a {
+  margin: 0 4px !important;
+  padding: 9px 12px !important;
+  border-radius: var(--s-radius) !important;
+  transition: background var(--s-t), transform var(--s-t) !important;
+  position: relative !important;
+  opacity: 1 !important;
+}
+
+/* ── Menu Text ── */
+#sidebar-v2 .hl_nav-header a .nav-title,
+#sidebar-v2 .hl_nav-settings a .nav-title,
+#sidebar-v2 a.custom-link .nav-title {
+  color: var(--s-text) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  transition: color var(--s-t) !important;
+  letter-spacing: -0.015em !important;
+}
+
+/* ── Native Menu Icons (img) ── */
+#sidebar-v2 .hl_nav-header a img,
+#sidebar-v2 .hl_nav-settings a img {
+  opacity: 0.45 !important;
+  width: 20px !important;
+  height: 20px !important;
+  transition: opacity var(--s-t) !important;
+}
+
+/* ── Custom Link Icons (FA) — fix rendering ── */
+#sidebar-v2 a.custom-link > span.h-5 {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0 !important;
+}
+/* Match custom link icon color/opacity to native img icons */
+#sidebar-v2 a.custom-link i {
+  color: inherit !important;
+  font-size: 15px !important;
+  opacity: 0.45 !important;
+  transition: opacity var(--s-t) !important;
+}
+
+/* ── Hover ── */
+#sidebar-v2 .hl_nav-header a:hover,
+#sidebar-v2 .hl_nav-settings a:hover {
+  background: var(--s-hover) !important;
+  opacity: 1 !important;
+  /* no translateX — prevents horizontal scroll */
+}
+#sidebar-v2 .hl_nav-header a:hover .nav-title,
+#sidebar-v2 .hl_nav-settings a:hover .nav-title { color: var(--s-text-bright) !important; }
+#sidebar-v2 .hl_nav-header a:hover img,
+#sidebar-v2 .hl_nav-settings a:hover img { opacity: 0.75 !important; }
+#sidebar-v2 a.custom-link:hover i { opacity: 0.75 !important; }
+
+/* ── Active ── */
+#sidebar-v2 .hl_nav-header a.active,
+#sidebar-v2 .hl_nav-header a.exact-active {
+  background: var(--s-blue-soft) !important;
+  opacity: 1 !important;
+  /* no translateX — prevents horizontal scroll */
+}
+#sidebar-v2 .hl_nav-header a.active::before,
+#sidebar-v2 .hl_nav-header a.exact-active::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -1px !important;
+  top: 7px !important;
+  bottom: 7px !important;
+  width: 3px !important;
+  border-radius: 2px !important;
+  background: var(--s-blue) !important;
+  box-shadow: 0 0 8px var(--s-blue-glow) !important;
+}
+#sidebar-v2 .hl_nav-header a.active .nav-title,
+#sidebar-v2 .hl_nav-header a.exact-active .nav-title { color: var(--s-text-bright) !important; font-weight: 600 !important; }
+#sidebar-v2 .hl_nav-header a.active img,
+#sidebar-v2 .hl_nav-header a.exact-active img { opacity: 1 !important; filter: brightness(1.8) saturate(0.6) !important; }
+#sidebar-v2 .hl_nav-header a.active i,
+#sidebar-v2 .hl_nav-header a.exact-active i { color: var(--s-blue) !important; opacity: 1 !important; }
+
+/* ── Reorder ── */
+/* Main (above divider) */
+#sidebar-v2 .hl_nav-header > nav > a#sb_dashboard { order: 1 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_conversations { order: 2 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_opportunities { order: 3 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_calendars { order: 4 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_contacts { order: 5 !important; }
+/* Secondary (below divider) */
+#sidebar-v2 .hl_nav-header > nav > a[id="fa3284a1-fd70-4acd-8c2e-8e2db702d5a8"] { order: 11 !important; } /* Tutoriais Spark */
+#sidebar-v2 .hl_nav-header > nav > a#spark-templates { order: 12 !important; } /* Templates (injected) */
+#sidebar-v2 .hl_nav-header > nav > a#sb_automation { order: 13 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_reporting { order: 14 !important; }
+#sidebar-v2 .hl_nav-header > nav > a[id="928e6850-5198-44cf-94fb-8d912e973243"] { order: 15 !important; } /* Five Rings Import */
+#sidebar-v2 .hl_nav-header > nav > a[id="b967c18f-cfa6-4cb1-aa2a-340a1d2a5dfa"] { order: 16 !important; } /* Whatsapp */
+/* Any other custom menu links not explicitly ordered */
+#sidebar-v2 .hl_nav-header > nav > a.custom-link { order: 18 !important; }
+
+/* Spark-injected Templates link — styled like native items */
+#sidebar-v2 a#spark-templates {
+  margin: 0 4px !important;
+  padding: 9px 12px !important;
+  border-radius: var(--s-radius) !important;
+  transition: background var(--s-t) !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+}
+#sidebar-v2 a#spark-templates .nav-title {
+  color: var(--s-text) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.015em !important;
+  transition: color var(--s-t) !important;
+}
+#sidebar-v2 a#spark-templates i {
+  opacity: 0.45 !important;
+  font-size: 15px !important;
+  width: 20px !important;
+  text-align: center !important;
+  transition: opacity var(--s-t) !important;
+}
+#sidebar-v2 a#spark-templates:hover {
+  background: var(--s-hover) !important;
+}
+#sidebar-v2 a#spark-templates:hover .nav-title { color: var(--s-text-bright) !important; }
+#sidebar-v2 a#spark-templates:hover i { opacity: 0.75 !important; }
+#sidebar-v2 a#spark-templates.spark-active {
+  background: var(--s-blue-soft) !important;
+}
+#sidebar-v2 a#spark-templates.spark-active::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -1px !important;
+  top: 7px !important;
+  bottom: 7px !important;
+  width: 3px !important;
+  border-radius: 2px !important;
+  background: var(--s-blue) !important;
+  box-shadow: 0 0 8px var(--s-blue-glow) !important;
+}
+#sidebar-v2 a#spark-templates.spark-active .nav-title { color: var(--s-text-bright) !important; font-weight: 600 !important; }
+#sidebar-v2 a#spark-templates.spark-active i { opacity: 1 !important; color: var(--s-blue) !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_email-marketing { order: 50 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_payments { order: 51 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_sites { order: 52 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_memberships { order: 53 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_app-media { order: 54 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_reputation { order: 55 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_app-marketplace { order: 56 !important; }
+#sidebar-v2 .hl_nav-header > nav > a#sb_location-mobile-app { order: 57 !important; }
+
+/* ── Hide ── */
+#sb_launchpad { display: none !important; }
+#sb_ai-employee-promo { display: none !important; }
+a[id="sb_AI Agents"] { display: none !important; }
+a#b945dffb-70bb-40be-9219-dbcaafc178d4 { display: none !important; }
+a#425e6d9b-1b91-4fd9-9f4f-ae01f43724ca { display: none !important; } /* Old Templates custom link — replaced by injected one */
+a#6656fbe08a310e28e65540b3 { display: none !important; }
+
+/* ── GHL Divider ── */
+#sidebar-v2 .hl_nav-header nav > .divider { order: 8 !important; margin: 4px 16px !important; padding: 0 !important; opacity: 1 !important; }
+#sidebar-v2 .hl_nav-header nav > .divider p { border-color: var(--s-border) !important; margin: 0 !important; }
+
+/* ── Spark Divider ── */
+.spark-divider { height: 1px !important; margin: 4px 16px !important; background: var(--s-border) !important; flex-shrink: 0 !important; }
+
+/* ── Spark Folder ── */
+.spark-folder-toggle {
+  display: flex !important; align-items: center !important; gap: 6px !important;
+  padding: 8px 16px !important; margin: 4px 4px 0 !important;
+  cursor: pointer !important; user-select: none !important;
+  border-radius: var(--s-radius) !important; transition: background var(--s-t) !important;
+}
+.spark-folder-toggle:hover { background: var(--s-hover) !important; }
+.spark-folder-toggle:hover .spark-folder-label { color: var(--s-text) !important; }
+.spark-folder-label { font-size: 10px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.06em !important; color: var(--s-text-muted) !important; transition: color var(--s-t) !important; }
+.spark-folder-chevron { width: 12px !important; height: 12px !important; color: var(--s-text-muted) !important; transition: transform var(--s-t) !important; flex-shrink: 0 !important; }
+.spark-folder-chevron.open { transform: rotate(90deg) !important; }
+.spark-folder-body { display: flex !important; flex-direction: column !important; gap: 2px !important; }
+.spark-folder-body.collapsed { display: none !important; }
+
+/* ── Sub-menu ── */
+.spark-submenu { display: flex !important; flex-direction: column !important; padding: 2px 0 !important; margin: 0 4px !important; }
+.spark-submenu.collapsed { display: none !important; }
+.spark-submenu a {
+  display: flex !important; align-items: center !important;
+  padding: 6px 12px 6px 40px !important; color: var(--s-text-muted) !important;
+  font-size: 12.5px !important; font-weight: 400 !important;
+  text-decoration: none !important; border-radius: 8px !important;
+  transition: background var(--s-t), color var(--s-t) !important;
+  position: relative !important;
+}
+.spark-submenu a::before { content: '' !important; position: absolute !important; left: 24px !important; top: 50% !important; width: 4px !important; height: 4px !important; border-radius: 50% !important; background: var(--s-text-muted) !important; opacity: 0.35 !important; transform: translateY(-50%) !important; }
+.spark-submenu a:hover { background: var(--s-hover) !important; color: var(--s-text-bright) !important; }
+.spark-submenu a:hover::before { opacity: 0.7 !important; }
+.spark-submenu a.spark-sub-active { color: var(--s-text-bright) !important; background: var(--s-blue-soft) !important; }
+.spark-submenu a.spark-sub-active::before { background: var(--s-blue) !important; opacity: 1 !important; }
+
+/* ── Expand chevron ── */
+.spark-expand-btn {
+  position: absolute !important; right: 8px !important; top: 50% !important; transform: translateY(-50%) !important;
+  width: 22px !important; height: 22px !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  border: none !important; background: none !important; color: var(--s-text-muted) !important;
+  cursor: pointer !important; border-radius: 6px !important;
+  transition: background var(--s-t), color var(--s-t) !important;
+  padding: 0 !important; opacity: 0.3 !important;
+}
+#sidebar-v2 .hl_nav-header a:hover .spark-expand-btn { opacity: 0.6 !important; }
+.spark-expand-btn:hover { background: rgba(255,255,255,0.08) !important; color: var(--s-text-bright) !important; opacity: 1 !important; }
+.spark-expand-btn.open { opacity: 0.5 !important; }
+.spark-expand-btn.open svg { transform: rotate(90deg) !important; }
+.spark-expand-btn svg { width: 12px !important; height: 12px !important; transition: transform var(--s-t) !important; }
+
+/* ── Settings ── */
+#sidebar-v2 .hl_nav-settings { border-top: 1px solid var(--s-border) !important; padding-top: 4px !important; overflow-x: hidden !important; }
+
+/* ── Collapse Button — centered, visible on sidebar hover ── */
+#sidebar-v2 > .absolute.z-50 {
+  bottom: auto !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: -12px !important;
+  opacity: 0 !important;
+  transition: opacity 0.25s ease !important;
+  z-index: 999 !important;
+}
+#sidebar-v2:hover > .absolute.z-50 {
+  opacity: 1 !important;
+}
+#sidebar-v2 .hl_collapse-button {
+  color: var(--s-text) !important;
+  background: var(--s-surface) !important;
+  border: 1px solid var(--s-border) !important;
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  transition: background var(--s-t), color var(--s-t), border-color var(--s-t) !important;
+}
+#sidebar-v2 .hl_collapse-button:hover {
+  background: var(--s-hover) !important;
+  color: var(--s-blue) !important;
+  border-color: var(--s-blue-glow) !important;
+}
+
+/* ── Scrollbar — vertical only ── */
+#sidebar-v2 .hl_nav-header::-webkit-scrollbar { width: 2px !important; }
+#sidebar-v2 .hl_nav-header::-webkit-scrollbar-track { background: transparent !important; }
+#sidebar-v2 .hl_nav-header::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06) !important; border-radius: 2px !important; }
+
+/* ── Settings collapsible sections (applied by JS) ── */
+.spark-section-toggle {
+  cursor: pointer !important;
+  user-select: none !important;
+}
+.spark-section-toggle:hover span.uppercase {
+  opacity: 0.9 !important;
+}
+.spark-section-chevron {
+  width: 10px !important;
+  height: 10px !important;
+  color: var(--s-text-muted) !important;
+  transition: transform var(--s-t) !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin-left: 6px !important;
+}
+.spark-section-chevron.collapsed {
+  transform: rotate(-90deg) !important;
+}
+/* Items hidden by settings collapse */
+.spark-section-hidden {
+  display: none !important;
+}
+
+/* ── Hide "Send a Review Request" from Quick Actions ── */
+#quick-send-review-v2 { display: none !important; }
+
+/* ── Account: UxgO7LJMqUWOZmiy5JOu ── */
+#sidebar-v2[data-spark-account="UxgO7LJMqUWOZmiy5JOu"] .hl_nav-header > nav > a#sb_dashboard { display: none !important; }
+#sidebar-v2[data-spark-account="UxgO7LJMqUWOZmiy5JOu"] .hl_nav-header > nav > a[id="88d8d11c-d99b-41dd-9f4f-d8a367ccde33"] { order: 0 !important; }
+
+/* ── Account: NdzeZDCKa8NmcmwsCU8T ── */
+#sidebar-v2[data-spark-account="NdzeZDCKa8NmcmwsCU8T"] .hl_nav-header > nav > a#sb_dashboard { display: none !important; }
+#sidebar-v2[data-spark-account="NdzeZDCKa8NmcmwsCU8T"] .hl_nav-header > nav > a[id="f077df9a-3363-44ff-a15e-c554081ed5a9"] { order: 0 !important; }
+
+/* ── Rename "SMS" → "Whatsapp QR/SMS" in conversations channel trigger ──
+   Scoped via :has(svg path[d^=...]) so the rename only triggers when the SMS
+   chat-bubble icon is the active channel. Other channels (Email, WhatsApp,
+   Facebook, Instagram, etc.) render their own label unchanged. */
+#conv-channel-bar-provider-trigger:has(svg path[d^="M7.5 12h.01"]) span.text-primary-600 {
+  font-size: 0 !important;
+}
+#conv-channel-bar-provider-trigger:has(svg path[d^="M7.5 12h.01"]) span.text-primary-600::after {
+  content: "Whatsapp QR/SMS" !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 17px !important;
+  white-space: nowrap !important;
+}

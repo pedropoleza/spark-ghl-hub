@@ -1,0 +1,1000 @@
+/* ============================================================
+   SPARK LEADS — Onboarding Wizard v2
+   Base visual: handoff Claude Design (onboarding-flow-sparkle).
+   Adaptações pra rodar DENTRO do GHL (não em página própria):
+   - tokens escopados em .spark-onb (NÃO :root — GHL tem vars próprias)
+   - zero styling de body
+   - reduced-motion escopado em .spark-onb (não global)
+   - z-index acima do app GHL
+   - componente novo: .spark-dock (retângulo inferior adaptativo)
+   - tema Driver.js (popovers vivem fora do .spark-onb → cores hardcoded)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ---------- Design tokens (escopados) ---------- */
+.spark-onb {
+  /* color */
+  --bg: #13161c;
+  --bg-elevated: #1a1e27;
+  --bg-hover: #212733;
+  --bg-input: #0f1116;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --text: #e2e6ed;
+  --text-muted: #8892a4;
+  --text-subtle: #4b5468;
+  --blue: #3b82f6;
+  --blue-light: #60a5fa;
+  --gold: #f5b731;
+  --gold-deep: #e5a320;
+  --purple: #8b5cf6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  /* radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 9999px;
+
+  /* shadow */
+  --sh-card: 0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --sh-elevated: 0 12px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --sh-glow: 0 0 0 1px var(--blue), 0 8px 32px rgba(59, 130, 246, 0.25);
+
+  /* type */
+  --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* duration */
+  --d-hover: 180ms;
+  --d-ui: 280ms;
+  --d-page: 400ms;
+
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.spark-onb *, .spark-onb *::before, .spark-onb *::after { box-sizing: border-box; }
+.spark-onb h1, .spark-onb h2, .spark-onb h3, .spark-onb p { margin: 0; }
+.spark-onb button { font-family: inherit; }
+
+/* ---------- Fullscreen host (cobre o app GHL) ---------- */
+.spark-onb__host {
+  position: fixed;
+  inset: 0;
+  z-index: 999990;
+  color-scheme: dark;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(245, 183, 49, 0.04) 0%, transparent 40%);
+}
+.spark-onb__host.is-hidden { display: none; }
+
+/* ---------- The wizard host ---------- */
+.spark-onb .spark {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.spark-onb .btn {
+  --_bg: var(--bg-elevated);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--_bg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform var(--d-hover) var(--ease-out),
+              box-shadow var(--d-hover) var(--ease-out),
+              background var(--d-hover) var(--ease-out),
+              border-color var(--d-hover) var(--ease-out),
+              opacity var(--d-hover) var(--ease-out);
+}
+.spark-onb .btn svg { flex: none; width: 16px; height: 16px; }
+.spark-onb .btn:hover { transform: translateY(-1px); background: var(--bg-hover); border-color: var(--border-hover); }
+.spark-onb .btn:active { transform: scale(0.97); transition-duration: 100ms; }
+.spark-onb .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--blue); }
+.spark-onb .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.spark-onb .btn--lg { height: 48px; padding: 0 26px; font-size: 15px; }
+.spark-onb .btn--sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+.spark-onb .btn--ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+.spark-onb .btn--ghost:hover { background: var(--bg-hover); color: var(--text); border-color: transparent; }
+
+.spark-onb .btn--primary {
+  background-image: linear-gradient(135deg, var(--blue), var(--blue-light));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.28);
+}
+.spark-onb .btn--primary:hover { background-image: linear-gradient(135deg, var(--blue-light), var(--blue)); box-shadow: 0 8px 28px rgba(59, 130, 246, 0.42); }
+.spark-onb .btn--primary:disabled { background-image: none; background: var(--bg-elevated); color: var(--text-subtle); box-shadow: none; }
+
+.spark-onb .btn--text { background: none; border: none; height: auto; padding: 6px 4px; color: var(--text-muted); font-weight: 500; }
+.spark-onb .btn--text:hover { background: none; transform: none; color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ============================================================
+   WELCOME SCREEN
+   ============================================================ */
+.spark-onb .welcome {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding: 48px 24px;
+  text-align: center;
+}
+.spark-onb .welcome__lang { position: absolute; top: 24px; left: 24px; }
+.spark-onb .welcome__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 460px;
+  width: 100%;
+  margin: auto;
+}
+
+/* Spark logo with breathing glow */
+.spark-onb .spark-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 35% 30%, #ffd970, var(--gold) 55%, var(--gold-deep));
+  color: #1a1205;
+  position: relative;
+  flex: none;
+}
+.spark-onb .spark-logo svg { width: 30px; height: 30px; position: relative; z-index: 1; }
+.spark-onb .welcome .spark-logo { animation: sonb-logo-breathe 3s var(--ease-out) infinite; }
+.spark-onb .welcome .spark-logo::after {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 183, 49, 0.35), transparent 68%);
+  animation: sonb-logo-aura 3s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes sonb-logo-breathe {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(245,183,49,0.4), 0 0 28px rgba(245, 183, 49, 0.3); }
+  50%      { box-shadow: 0 0 0 1px rgba(245,183,49,0.6), 0 0 48px rgba(245, 183, 49, 0.6); }
+}
+@keyframes sonb-logo-aura {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0.7;  transform: scale(1.18); }
+}
+
+.spark-onb .welcome__title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-top: 28px;
+  text-wrap: balance;
+}
+.spark-onb .welcome__sub {
+  font-size: 18px;
+  color: var(--text-muted);
+  margin-top: 12px;
+  line-height: 1.5;
+  max-width: 34ch;
+}
+
+.spark-onb .welcome__card {
+  width: 100%;
+  margin-top: 32px;
+  padding: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.spark-onb .welcome__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  text-align: left;
+}
+.spark-onb .welcome__row + .welcome__row { border-top: 1px solid var(--border); border-radius: 0; }
+.spark-onb .welcome__row-ic {
+  width: 38px; height: 38px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--blue-light);
+}
+.spark-onb .welcome__row-ic svg { width: 19px; height: 19px; }
+.spark-onb .welcome__row-tx { min-width: 0; }
+.spark-onb .welcome__row-tx b { font-size: 15px; font-weight: 700; display: block; line-height: 1.3; }
+.spark-onb .welcome__row-tx span { font-size: 13px; color: var(--text-muted); display: block; }
+
+.spark-onb .welcome__cta { margin-top: 28px; width: 100%; max-width: 320px; box-shadow: var(--sh-glow); }
+.spark-onb .welcome__skip { margin-top: 14px; }
+
+/* plan badge pill */
+.spark-onb .plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 11px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.spark-onb .plan-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.spark-onb .plan-badge--starter { color: var(--blue-light); background: rgba(59, 130, 246, 0.14); }
+.spark-onb .plan-badge--growth  { color: #a78bfa; background: rgba(139, 92, 246, 0.16); }
+.spark-onb .plan-badge--agency  { color: var(--gold); background: rgba(245, 183, 49, 0.14); }
+
+/* phase chip (Configuração / Tour) */
+.spark-onb .phase-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 11px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+.spark-onb .phase-chip svg { width: 12px; height: 12px; }
+.spark-onb .phase-chip--tour { color: var(--gold); border-color: rgba(245,183,49,0.25); background: rgba(245,183,49,0.08); }
+
+/* ============================================================
+   WIZARD LAYOUT — top bar / content / footer
+   ============================================================ */
+.spark-onb .wiz {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.spark-onb .wiz__top {
+  height: 64px;
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 3;
+}
+.spark-onb .wiz__brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+.spark-onb .wiz__brand .spark-logo { width: 24px; height: 24px; }
+.spark-onb .wiz__brand .spark-logo svg { width: 13px; height: 13px; }
+.spark-onb .wiz__brand-tx { letter-spacing: -0.01em; }
+
+/* progress bar */
+.spark-onb .wiz__progress {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  z-index: 4;
+}
+.spark-onb .wiz__progress-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light));
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+  border-radius: 0 3px 3px 0;
+  transition: width 600ms var(--ease-out);
+}
+.spark-onb .wiz__progress-fill.is-pulsing { animation: sonb-prog-pulse 600ms var(--ease-out); }
+@keyframes sonb-prog-pulse {
+  0% { box-shadow: 0 0 12px rgba(59,130,246,0.6); }
+  40% { box-shadow: 0 0 22px rgba(96,165,250,1); }
+  100% { box-shadow: 0 0 12px rgba(59,130,246,0.6); }
+}
+
+.spark-onb .wiz__top-right { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.spark-onb .wiz__counter { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.spark-onb .wiz__counter b { color: var(--text); font-weight: 700; }
+
+.spark-onb .icon-btn {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--d-hover) var(--ease-out);
+}
+.spark-onb .icon-btn svg { width: 18px; height: 18px; }
+.spark-onb .icon-btn:hover { background: var(--bg-hover); color: var(--text); transform: translateY(-1px); }
+.spark-onb .icon-btn:active { transform: scale(0.94); }
+.spark-onb .icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--blue); }
+
+/* scrolling content region */
+.spark-onb .wiz__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px 32px;
+  position: relative;
+}
+.spark-onb .wiz__stage { width: 100%; max-width: 720px; margin: auto 0; }
+
+/* footer */
+.spark-onb .wiz__footer {
+  height: 72px;
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  border-top: 1px solid var(--border);
+  background: rgba(19, 22, 28, 0.7);
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 3;
+}
+.spark-onb .wiz__footer-l { justify-self: start; }
+.spark-onb .wiz__footer-c { justify-self: center; }
+.spark-onb .wiz__footer-r { justify-self: end; }
+
+/* ============================================================
+   STEP CONTENT (shared)
+   ============================================================ */
+.spark-onb .step { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.spark-onb .step--left { align-items: flex-start; text-align: left; }
+
+.spark-onb .hero-ic {
+  display: grid; place-items: center;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(59,130,246,0.04));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--blue-light);
+  margin-bottom: 24px;
+}
+.spark-onb .hero-ic--56 { width: 56px; height: 56px; }
+.spark-onb .hero-ic--64 { width: 64px; height: 64px; border-radius: 18px; }
+.spark-onb .hero-ic--80 { width: 80px; height: 80px; border-radius: 22px; }
+.spark-onb .hero-ic--56 svg { width: 26px; height: 26px; }
+.spark-onb .hero-ic--64 svg { width: 30px; height: 30px; }
+.spark-onb .hero-ic--80 svg { width: 38px; height: 38px; }
+.spark-onb .hero-ic--gold { background: linear-gradient(135deg, rgba(245,183,49,0.2), rgba(245,183,49,0.04)); border-color: rgba(245,183,49,0.25); color: var(--gold); }
+.spark-onb .hero-ic--success { background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.04)); border-color: rgba(16,185,129,0.25); color: var(--success); }
+
+.spark-onb .step__title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; text-wrap: balance; }
+.spark-onb .step__title--lg { font-size: 36px; }
+.spark-onb .step__desc { font-size: 16px; color: var(--text-muted); line-height: 1.6; margin-top: 12px; max-width: 60ch; text-wrap: pretty; }
+.spark-onb .step__desc--lg { font-size: 18px; }
+.spark-onb .step__action { width: 100%; margin-top: 32px; }
+
+/* helper text */
+.spark-onb .helper { font-size: 13px; color: var(--text-subtle); margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; }
+.spark-onb .helper svg { width: 14px; height: 14px; flex: none; }
+
+/* ============================================================
+   PAGE TRANSITIONS
+   ============================================================ */
+.spark-onb .anim-on .step-enter-fwd  { animation: sonb-slide-in-right var(--d-page) var(--ease-out) both; }
+.spark-onb .anim-on .step-enter-back { animation: sonb-slide-in-left  var(--d-page) var(--ease-out) both; }
+.spark-onb .anim-on .step-exit-fwd   { animation: sonb-slide-out-left 200ms var(--ease-in) both; }
+.spark-onb .anim-on .step-exit-back  { animation: sonb-slide-out-right 200ms var(--ease-in) both; }
+@keyframes sonb-slide-in-right { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes sonb-slide-in-left  { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes sonb-slide-out-left  { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-24px); } }
+@keyframes sonb-slide-out-right { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(24px); } }
+
+.spark-onb .anim-on .hero-ic { animation: sonb-hero-pop 520ms var(--ease-bounce) both; }
+@keyframes sonb-hero-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+
+.spark-onb .anim-on .fade-up { animation: sonb-fade-up 560ms var(--ease-out) both; }
+/* logo do welcome: entrada + glow respirando (o shorthand .fade-up sobrescreveria o breathe) */
+.spark-onb .anim-on .welcome .spark-logo.fade-up {
+  animation: sonb-fade-up 560ms var(--ease-out) both,
+             sonb-logo-breathe 3s var(--ease-out) 600ms infinite;
+}
+.spark-onb .fade-up-1 { animation-delay: 60ms; }
+.spark-onb .fade-up-2 { animation-delay: 140ms; }
+.spark-onb .fade-up-3 { animation-delay: 220ms; }
+.spark-onb .fade-up-4 { animation-delay: 320ms; }
+@keyframes sonb-fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============================================================
+   REDIRECT step — "o que você vai ver" preview
+   ============================================================ */
+.spark-onb .marks-preview {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.spark-onb .marks-preview__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+.spark-onb .marks-preview__row + .marks-preview__row { border-top: 1px solid var(--border); }
+.spark-onb .marks-preview__n {
+  width: 26px; height: 26px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: rgba(59,130,246,0.12);
+  color: var(--blue-light);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.spark-onb .marks-preview__tx { min-width: 0; }
+.spark-onb .marks-preview__tx b { font-size: 14px; font-weight: 600; display: block; line-height: 1.3; }
+.spark-onb .marks-preview__tx span { font-size: 12.5px; color: var(--text-muted); display: block; margin-top: 1px; }
+
+/* practice box (interactive_demo) */
+.spark-onb .practice-box {
+  width: 100%;
+  max-width: 520px;
+  margin: 16px auto 0;
+  padding: 16px;
+  background: rgba(245, 183, 49, 0.06);
+  border: 1px solid rgba(245, 183, 49, 0.22);
+  border-radius: var(--r-md);
+  text-align: left;
+}
+.spark-onb .practice-box__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.spark-onb .practice-box__head svg { width: 15px; height: 15px; }
+.spark-onb .practice-box p { font-size: 14px; color: var(--text); line-height: 1.55; margin-top: 8px; }
+.spark-onb .practice-box pre {
+  margin: 10px 0 0;
+  padding: 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ============================================================
+   REVIEW / lists (auto-rows, reusado por info features e exemplos)
+   ============================================================ */
+.spark-onb .auto-list { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 520px; margin: 0 auto; }
+.spark-onb .auto-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  text-align: left;
+  transition: border-color var(--d-hover) var(--ease-out);
+}
+.spark-onb .auto-row:hover { border-color: var(--border-hover); }
+.spark-onb .auto-row__ic { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; background: rgba(59,130,246,0.12); color: var(--blue-light); }
+.spark-onb .auto-row__ic svg { width: 19px; height: 19px; }
+.spark-onb .auto-row__tx { flex: 1; min-width: 0; }
+.spark-onb .auto-row__tx b { font-size: 14px; font-weight: 600; display: block; }
+.spark-onb .auto-row__tx span { font-size: 13px; color: var(--text-muted); }
+
+/* ============================================================
+   ACTION step — progressive loading checklist
+   ============================================================ */
+.spark-onb .proc-list { display: flex; flex-direction: column; gap: 4px; width: 100%; max-width: 460px; margin: 0 auto; text-align: left; }
+.spark-onb .proc-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  opacity: 0.4;
+  transition: opacity var(--d-ui) var(--ease-out), background var(--d-ui) var(--ease-out), border-color var(--d-ui) var(--ease-out);
+}
+.spark-onb .proc-row.is-active { opacity: 1; border-color: rgba(59,130,246,0.35); }
+.spark-onb .proc-row.is-done { opacity: 1; }
+.spark-onb .proc-row__tx { flex: 1; font-size: 14px; font-weight: 500; }
+.spark-onb .proc-row.is-done .proc-row__tx { color: var(--text); }
+.spark-onb .proc-row__ind { width: 24px; height: 24px; flex: none; display: grid; place-items: center; }
+
+/* loading dots */
+.spark-onb .dots { display: inline-flex; gap: 4px; }
+.spark-onb .dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-light); animation: sonb-dot-bounce 1s ease-in-out infinite; }
+.spark-onb .dots span:nth-child(2) { animation-delay: 150ms; }
+.spark-onb .dots span:nth-child(3) { animation-delay: 300ms; }
+@keyframes sonb-dot-bounce { 0%, 80%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-4px); } }
+
+/* checkmark draw */
+.spark-onb .check-draw { width: 22px; height: 22px; }
+.spark-onb .check-draw circle { fill: var(--success); }
+.spark-onb .check-draw path { stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; fill: none; stroke-dasharray: 22; stroke-dashoffset: 22; }
+.spark-onb .check-draw.is-drawn path { animation: sonb-check-draw 400ms var(--ease-out) forwards; }
+@keyframes sonb-check-draw { to { stroke-dashoffset: 0; } }
+
+/* ============================================================
+   QR step (app móvel)
+   ============================================================ */
+.spark-onb .qr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.spark-onb .qr-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.spark-onb .qr-card__label { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; }
+.spark-onb .qr-card__label svg { width: 17px; height: 17px; }
+.spark-onb .qr-card__img {
+  width: 156px; height: 156px;
+  border-radius: var(--r-md);
+  background: #fff;
+  padding: 10px;
+}
+.spark-onb .qr-card__img img { width: 100%; height: 100%; display: block; }
+.spark-onb .qr-card .btn { width: 100%; }
+
+/* ============================================================
+   COMPLETION screen
+   ============================================================ */
+.spark-onb .done-screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  overflow-y: auto;
+  padding: 48px 24px; text-align: center;
+}
+.spark-onb .done-screen__inner { display: flex; flex-direction: column; align-items: center; max-width: 480px; width: 100%; margin: auto; }
+.spark-onb .done-summary {
+  width: 100%; margin-top: 28px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card);
+  overflow: hidden;
+}
+.spark-onb .done-summary__head { display: flex; gap: 12px; padding: 18px 20px; }
+.spark-onb .done-stat { flex: 1; text-align: left; }
+.spark-onb .done-stat__n { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.spark-onb .done-stat__n--ok { color: var(--success); }
+.spark-onb .done-stat__n--skip { color: var(--text-muted); }
+.spark-onb .done-stat__l { font-size: 12px; color: var(--text-muted); }
+.spark-onb .done-disclosure { border-top: 1px solid var(--border); }
+.spark-onb .done-disclosure summary { list-style: none; cursor: pointer; padding: 14px 20px; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+.spark-onb .done-disclosure summary::-webkit-details-marker { display: none; }
+.spark-onb .done-disclosure summary .chev { transition: transform var(--d-hover) var(--ease-out); display: inline-flex; }
+.spark-onb .done-disclosure summary .chev svg { width: 14px; height: 14px; }
+.spark-onb .done-disclosure[open] summary .chev { transform: rotate(90deg); }
+.spark-onb .done-disclosure ul { list-style: none; margin: 0; padding: 0 20px 16px; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.spark-onb .done-disclosure li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); }
+.spark-onb .done-disclosure li svg { width: 15px; height: 15px; flex: none; }
+.spark-onb .done-disclosure li.skipped { color: var(--text-subtle); }
+.spark-onb .done-cta { width: 100%; max-width: 340px; margin-top: 28px; box-shadow: var(--sh-glow); }
+.spark-onb .done-secondary { margin-top: 12px; }
+
+/* confetti layer */
+.spark-onb .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 50; }
+.spark-onb .confetti i {
+  position: absolute; top: -12px;
+  width: 8px; height: 8px; border-radius: 2px;
+  will-change: transform, opacity;
+  animation: sonb-confetti-fall var(--dur, 2s) var(--ease-in) forwards;
+}
+@keyframes sonb-confetti-fall {
+  0% { opacity: 1; transform: translate3d(0,0,0) rotate(0); }
+  100% { opacity: 0; transform: translate3d(var(--dx, 0), var(--dy, 100vh), 0) rotate(var(--rot, 540deg)); }
+}
+
+/* particle micro-burst */
+.spark-onb .burst { position: absolute; pointer-events: none; z-index: 20; }
+.spark-onb .burst i {
+  position: absolute; top: 0; left: 0;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--blue-light);
+  animation: sonb-burst 700ms var(--ease-out) forwards;
+}
+@keyframes sonb-burst {
+  0% { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(0.3); }
+}
+
+/* ============================================================
+   FLOATING BUTTON (FAB)
+   ============================================================ */
+.spark-onb .spark-fab {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: none;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+  color: #13161c;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(245, 183, 49, 0.3);
+  transition: transform var(--d-hover) var(--ease-out), box-shadow var(--d-hover) var(--ease-out);
+  z-index: 999970;
+}
+.spark-onb .spark-fab svg { width: 22px; height: 22px; position: relative; z-index: 2; }
+.spark-onb .spark-fab:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(245, 183, 49, 0.5); }
+.spark-onb .spark-fab:active { transform: scale(0.96); }
+.spark-onb .spark-fab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--gold); }
+.spark-onb .spark-fab::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: rgba(245, 183, 49, 0.5);
+  z-index: 0;
+}
+.spark-onb .spark-fab.has-pending::before { animation: sonb-fab-pulse 2s var(--ease-out) infinite; }
+@keyframes sonb-fab-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.spark-onb .spark-fab__badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 22px; height: 22px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px; font-weight: 700;
+  display: grid; place-items: center;
+  border: 2px solid var(--bg);
+  z-index: 3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   DOCK — retângulo inferior adaptativo (modo navegação no GHL)
+   Estados: default | driving (pill) | min | expanded
+   ============================================================ */
+.spark-onb .spark-dock {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 32px));
+  background: rgba(26, 30, 39, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-elevated);
+  z-index: 999980;
+  color: var(--text);
+  animation: sonb-dock-in 400ms var(--ease-out) both;
+  transition: width var(--d-ui) var(--ease-out), opacity var(--d-ui) var(--ease-out);
+}
+@keyframes sonb-dock-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(24px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* barra principal */
+.spark-onb .spark-dock__bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+}
+.spark-onb .spark-dock__ic {
+  width: 40px; height: 40px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(59,130,246,0.04));
+  border: 1px solid rgba(59,130,246,0.2);
+  color: var(--blue-light);
+}
+.spark-onb .spark-dock__ic svg { width: 20px; height: 20px; }
+.spark-onb .spark-dock__tx { flex: 1; min-width: 0; text-align: left; }
+.spark-onb .spark-dock__title {
+  font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 8px;
+}
+.spark-onb .spark-dock__count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.spark-onb .spark-dock__sub {
+  font-size: 12.5px; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.spark-onb .spark-dock__actions { display: flex; align-items: center; gap: 8px; flex: none; }
+
+/* progress fininho no topo do dock */
+.spark-onb .spark-dock__progress {
+  position: absolute;
+  top: 0; left: 16px; right: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.spark-onb .spark-dock__progress i {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light));
+  border-radius: 2px;
+  transition: width 600ms var(--ease-out);
+}
+
+/* área expandida (practice / detalhes) */
+.spark-onb .spark-dock__detail {
+  display: none;
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+  padding-top: 12px;
+  text-align: left;
+}
+.spark-onb .spark-dock.is-expanded .spark-dock__detail { display: block; animation: sonb-fade-up 280ms var(--ease-out) both; }
+.spark-onb .spark-dock__detail p { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+.spark-onb .spark-dock__detail .practice-box { max-width: none; margin-top: 10px; }
+.spark-onb .spark-dock__detail .practice-box pre { font-size: 12px; }
+
+/* estado driving: encolhe pra pill (durante tour Driver.js)
+   z-index acima do overlay do Driver (1000000) pro "Parar tour" ficar clicável */
+.spark-onb .spark-dock.is-driving {
+  width: auto;
+  left: 24px;
+  transform: none;
+  animation: none;
+  z-index: 1000020;
+}
+.spark-onb .spark-dock.is-driving .spark-dock__bar { padding: 9px 14px; gap: 10px; }
+.spark-onb .spark-dock.is-driving .spark-dock__ic { width: 30px; height: 30px; border-radius: 8px; }
+.spark-onb .spark-dock.is-driving .spark-dock__ic svg { width: 15px; height: 15px; }
+.spark-onb .spark-dock.is-driving .spark-dock__sub,
+.spark-onb .spark-dock.is-driving .spark-dock__detail,
+.spark-onb .spark-dock.is-driving .spark-dock__actions .btn:not(.spark-dock__stop),
+.spark-onb .spark-dock.is-driving .spark-dock__actions .icon-btn { display: none; }
+.spark-onb .spark-dock.is-driving .spark-dock__progress { display: none; }
+
+/* estado minimizado: vira pill compacta */
+.spark-onb .spark-dock.is-min {
+  width: auto;
+}
+.spark-onb .spark-dock.is-min .spark-dock__bar { padding: 9px 14px; }
+.spark-onb .spark-dock.is-min .spark-dock__sub,
+.spark-onb .spark-dock.is-min .spark-dock__detail { display: none; }
+.spark-onb .spark-dock.is-min .spark-dock__actions > *:not(.spark-dock__restore) { display: none; }
+.spark-onb .spark-dock.is-min .spark-dock__title { max-width: 220px; }
+
+/* ============================================================
+   MODALS (close confirm / etc) — vivem dentro do host fullscreen
+   ============================================================ */
+.spark-onb .overlay {
+  position: absolute; inset: 0;
+  background: rgba(8, 10, 14, 0.6);
+  backdrop-filter: blur(8px);
+  display: grid; place-items: center;
+  padding: 24px;
+  z-index: 90;
+  animation: sonb-fade-in 200ms var(--ease-out) both;
+}
+@keyframes sonb-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.spark-onb .modal {
+  width: 100%; max-width: 420px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-elevated);
+  padding: 28px;
+  text-align: center;
+  animation: sonb-modal-in var(--d-ui) var(--ease-bounce) both;
+}
+@keyframes sonb-modal-in { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.spark-onb .modal__ic { width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 14px; display: grid; place-items: center; background: rgba(245,183,49,0.14); color: var(--gold); }
+.spark-onb .modal__ic svg { width: 24px; height: 24px; }
+.spark-onb .modal__title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.spark-onb .modal__desc { font-size: 14px; color: var(--text-muted); line-height: 1.55; margin-top: 8px; }
+.spark-onb .modal__actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+.spark-onb .modal__actions .btn { width: 100%; }
+
+/* ============================================================
+   LANG TOGGLE
+   ============================================================ */
+.spark-onb .lang {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+}
+.spark-onb .lang button {
+  height: 28px; padding: 0 12px;
+  border: none; background: none;
+  color: var(--text-muted);
+  font-size: 12px; font-weight: 600;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: all var(--d-hover) var(--ease-out);
+}
+.spark-onb .lang button.is-on { background: var(--bg-hover); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.spark-onb .lang button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--blue); }
+
+/* ============================================================
+   RESPONSIVE — container query (responde à largura do wizard)
+   ============================================================ */
+@container (max-width: 640px) {
+  .spark-onb .wiz__top { height: 56px; grid-template-columns: auto 1fr auto; padding: 0 16px; }
+  .spark-onb .wiz__brand-tx { display: none; }
+  .spark-onb .wiz__progress { height: 2px; }
+  .spark-onb .wiz__body { padding: 28px 16px 24px; }
+  .spark-onb .wiz__footer { height: auto; min-height: 72px; padding: 12px 16px; grid-template-columns: 1fr; gap: 8px; }
+  .spark-onb .wiz__footer-l, .spark-onb .wiz__footer-c, .spark-onb .wiz__footer-r { justify-self: stretch; }
+  .spark-onb .wiz__footer-c { order: 3; }
+  .spark-onb .wiz__footer .btn { width: 100%; }
+  .spark-onb .wiz__footer-l .btn--ghost { justify-content: center; }
+
+  .spark-onb .hero-ic--80, .spark-onb .hero-ic--64 { width: 56px; height: 56px; border-radius: 16px; }
+  .spark-onb .hero-ic--56 { width: 48px; height: 48px; }
+  .spark-onb .step__title, .spark-onb .step__title--lg { font-size: 24px; }
+  .spark-onb .step__desc, .spark-onb .step__desc--lg { font-size: 15px; }
+
+  .spark-onb .qr-grid { grid-template-columns: 1fr; }
+
+  .spark-onb .welcome__title { font-size: 28px; }
+  .spark-onb .welcome__sub { font-size: 16px; }
+  .spark-onb .done-summary__head { flex-direction: column; gap: 8px; }
+}
+
+/* dock responsivo via media query (dock fica fora do container .spark)
+   :not() preserva os estados pill (is-driving/is-min) no mobile */
+@media (max-width: 640px) {
+  .spark-onb .spark-dock { bottom: 8px; }
+  .spark-onb .spark-dock:not(.is-driving):not(.is-min) { width: calc(100vw - 16px); }
+  .spark-onb .spark-dock:not(.is-driving):not(.is-min) .spark-dock__bar { flex-wrap: wrap; }
+  .spark-onb .spark-dock:not(.is-driving):not(.is-min) .spark-dock__actions { width: 100%; justify-content: flex-end; }
+}
+
+/* ============================================================
+   DRIVER.JS THEME — popovers montam fora do .spark-onb,
+   então valores hardcoded (sem var())
+   ============================================================ */
+.driver-popover.spark-driver {
+  background: #1a1e27;
+  color: #e2e6ed;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  max-width: 360px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.driver-popover.spark-driver .driver-popover-title {
+  color: #e2e6ed;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+.driver-popover.spark-driver .driver-popover-description {
+  color: #8892a4;
+  font-size: 13.5px;
+  line-height: 1.55;
+  font-family: inherit;
+}
+.driver-popover.spark-driver .driver-popover-close-btn { color: #4b5468; }
+.driver-popover.spark-driver .driver-popover-close-btn:hover { color: #e2e6ed; }
+.driver-popover.spark-driver .driver-popover-progress-text {
+  color: #4b5468;
+  font-family: inherit;
+  font-size: 12px;
+}
+.driver-popover.spark-driver .driver-popover-footer button {
+  font-family: inherit;
+  text-shadow: none;
+  border-radius: 9px;
+  padding: 6px 14px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.driver-popover.spark-driver .driver-popover-footer .driver-popover-next-btn {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: #fff;
+  border: none;
+}
+.driver-popover.spark-driver .driver-popover-footer .driver-popover-prev-btn {
+  background: transparent;
+  color: #8892a4;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.driver-popover.spark-driver .driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: #1a1e27; }
+.driver-popover.spark-driver .driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: #1a1e27; }
+.driver-popover.spark-driver .driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: #1a1e27; }
+.driver-popover.spark-driver .driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: #1a1e27; }
+
+/* driver acima de tudo do GHL (e do dock pill em is-driving: 1000020) */
+.driver-overlay { z-index: 1000000 !important; }
+.driver-popover.spark-driver { z-index: 1000030 !important; }
+.driver-active-element { z-index: 1000005 !important; }
+
+/* ============================================================
+   REDUCED MOTION — escopado (NÃO afetar o GHL)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .spark-onb *, .spark-onb *::before, .spark-onb *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .spark-onb .confetti, .spark-onb .burst { display: none !important; }
+}

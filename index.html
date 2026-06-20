@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spark Sidebar Customizer</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <span class="brand-name">Spark <span class="brand-accent">Sidebar</span></span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" id="btn-load" title="Carregar configuração salva">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Carregar
+      </button>
+      <button class="btn btn-ghost" id="btn-save" title="Salvar configuração">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar
+      </button>
+      <div class="topbar-divider"></div>
+      <button class="btn btn-accent" id="btn-export-css" title="Ver CSS gerado">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Ver CSS
+      </button>
+      <button class="btn btn-accent" id="btn-export-js" title="Ver JS gerado">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Ver JS
+      </button>
+      <div class="topbar-divider"></div>
+      <button class="btn btn-primary" id="btn-deploy" title="Deploy na Vercel e gerar links">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+        Deploy
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <main class="layout">
+    <!-- Left Panel: Configuration -->
+    <section class="panel panel-config">
+      <div class="panel-scroll">
+
+        <!-- Logo Section -->
+        <div class="config-section">
+          <h3 class="section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Logo
+          </h3>
+          <div class="edit-field" style="margin-bottom:8px">
+            <label>URL da imagem do logo</label>
+            <input type="text" id="logo-url" value="" placeholder="https://exemplo.com/logo.png">
+          </div>
+        </div>
+
+        <!-- Colors Section -->
+        <div class="config-section">
+          <h3 class="section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17.5 10.5a2.5 2.5 0 1 0 0 5"/><path d="M6.5 10.5a2.5 2.5 0 1 1 0 5"/><circle cx="13.5" cy="17.5" r="2.5"/><circle cx="8.5" cy="6.5" r="2.5"/></svg>
+            Cores
+          </h3>
+          <div class="color-grid">
+            <div class="color-field">
+              <label>Fundo</label>
+              <div class="color-input-wrap">
+                <input type="color" id="color-bg" value="#111827">
+                <input type="text" class="color-text" id="color-bg-text" value="#111827">
+              </div>
+            </div>
+            <div class="color-field">
+              <label>Texto</label>
+              <div class="color-input-wrap">
+                <input type="color" id="color-text" value="#8ba3be">
+                <input type="text" class="color-text" id="color-text-text" value="#8ba3be">
+              </div>
+            </div>
+            <div class="color-field">
+              <label>Hover BG</label>
+              <div class="color-input-wrap">
+                <input type="color" id="color-hover" value="#1f2937">
+                <input type="text" class="color-text" id="color-hover-text" value="#1f2937">
+              </div>
+            </div>
+            <div class="color-field">
+              <label>Ativo BG</label>
+              <div class="color-input-wrap">
+                <input type="color" id="color-active" value="#2563eb">
+                <input type="text" class="color-text" id="color-active-text" value="#2563eb">
+              </div>
+            </div>
+            <div class="color-field">
+              <label>Ativo Texto</label>
+              <div class="color-input-wrap">
+                <input type="color" id="color-active-text-color" value="#ffffff">
+                <input type="text" class="color-text" id="color-active-text-color-text" value="#ffffff">
+              </div>
+            </div>
+            <div class="color-field">
+              <label>Icone</label>
+              <div class="color-input-wrap">
+                <input type="color" id="color-icon" value="#607d9b">
+                <input type="text" class="color-text" id="color-icon-text" value="#607d9b">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typography Section -->
+        <div class="config-section">
+          <h3 class="section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            Tipografia
+          </h3>
+          <div class="field-row">
+            <div class="field">
+              <label>Tamanho da Fonte</label>
+              <div class="range-wrap">
+                <input type="range" id="font-size" min="11" max="16" value="13" step="1">
+                <span class="range-value" id="font-size-value">13px</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Border Radius</label>
+              <div class="range-wrap">
+                <input type="range" id="border-radius" min="0" max="16" value="6" step="1">
+                <span class="range-value" id="border-radius-value">6px</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Menu Items Section -->
+        <div class="config-section">
+          <h3 class="section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            Itens do Menu
+          </h3>
+          <div class="item-actions">
+            <button class="btn btn-sm btn-outline" id="btn-add-folder">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+              Folder
+            </button>
+            <button class="btn btn-sm btn-outline" id="btn-add-divider">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="12" x2="22" y2="12"/></svg>
+              Divisor
+            </button>
+          </div>
+          <p class="section-hint">Arraste para reordenar. Clique no lapis para editar nome. Use o olho para esconder.</p>
+          <div class="items-list" id="items-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Panel: Live Preview (real GHL embed) -->
+    <section class="panel panel-preview">
+      <div class="preview-toolbar">
+        <span class="preview-label-inline">Preview ao vivo</span>
+        <button class="btn btn-sm btn-ghost" id="btn-refresh-preview" title="Recarregar preview">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="preview-container">
+        <iframe id="preview-iframe" src="https://app.sparkleads.pro/v2/location/H09HtG22LZzTU8htMxxg/dashboard" class="preview-frame"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Export Code -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Codigo Exportado</h3>
+        <button class="btn-close" id="modal-close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code id="modal-code"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-copy">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Item -->
+  <div class="modal-overlay" id="edit-modal-overlay">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3 id="edit-modal-title">Editar Item</h3>
+        <button class="btn-close" id="edit-modal-close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="edit-modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="edit-modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="edit-modal-save">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Deploy Result -->
+  <div class="modal-overlay" id="deploy-modal-overlay">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3 id="deploy-modal-title">Deploy</h3>
+        <button class="btn-close" id="deploy-modal-close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="deploy-modal-body">
+        <div class="deploy-loading" id="deploy-loading">
+          <div class="spinner"></div>
+          <p>Fazendo deploy na Vercel...</p>
+        </div>
+        <div class="deploy-result" id="deploy-result" style="display:none">
+          <p class="deploy-success-label">Cole no Settings &gt; Company &gt; Whitelabel &gt; Custom Code:</p>
+          <div class="deploy-code-block">
+            <label>Campo "Custom CSS" (adicione no topo):</label>
+            <div class="deploy-snippet" id="deploy-css-tag"></div>
+            <button class="btn btn-sm btn-outline btn-copy-tag" data-target="deploy-css-tag">Copiar</button>
+          </div>
+          <div class="deploy-code-block">
+            <label>Campo "Custom JS" (adicione no topo):</label>
+            <div class="deploy-snippet" id="deploy-js-tag"></div>
+            <button class="btn btn-sm btn-outline btn-copy-tag" data-target="deploy-js-tag">Copiar</button>
+          </div>
+        </div>
+        <div class="deploy-error" id="deploy-error" style="display:none">
+          <p class="deploy-error-label">Erro no deploy:</p>
+          <pre class="deploy-error-msg" id="deploy-error-msg"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

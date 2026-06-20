@@ -1,0 +1,42 @@
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# Editors
+.idea/
+.vscode/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Vercel
+.vercel
+dist/.vercel
+.vercel/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code per-developer settings
+.claude/settings.local.json
+
+# Build artifacts
+build/
+out/
+dist/.next/
+
+# Temp
+tmp/
+.tmp/
+*.tmp
+
+# Internal planning docs (not part of public hub)
+PLAN.md
