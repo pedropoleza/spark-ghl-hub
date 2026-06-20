@@ -146,6 +146,40 @@
     console.warn('[SPARK-5MB-FIX] init failed:', e);
   }
 
+  /* ── Module loader ──
+     baseURL is derived from this script's src so forks deployed elsewhere
+     still load their own modules. Modules are loaded async and set globals
+     the rest of this file reads via `window.__SPARK_*` (e.g. ACCOUNT_OVERRIDES).
+     applySpark()'s polling cycle picks them up once available. */
+  var __sparkScript = document.currentScript || (function () {
+    var scripts = document.getElementsByTagName('script');
+    for (var i = scripts.length - 1; i >= 0; i--) {
+      if (scripts[i].src && scripts[i].src.indexOf('spark-sidebar.js') !== -1) return scripts[i];
+    }
+    return null;
+  })();
+  var __sparkBaseUrl = __sparkScript
+    ? __sparkScript.src.replace(/spark-sidebar\.js.*$/, '')
+    : 'https://dist-iota-one-53.vercel.app/';
+
+  function loadSparkModule(name) {
+    if (window['__SPARK_MODULE_LOADING_' + name]) return;
+    window['__SPARK_MODULE_LOADING_' + name] = true;
+    var s = document.createElement('script');
+    s.src = __sparkBaseUrl + 'modules/' + name + '.js?v=1';
+    s.async = true;
+    document.head.appendChild(s);
+  }
+
+  /* Always load: per-account overrides (hardcoded fallback; Supabase-backed soon) */
+  loadSparkModule('account-overrides');
+
+  /* Opt-in: DOM probe + error capture for debugging */
+  try {
+    var __probeFlag = localStorage.getItem('SPARK_PROBE');
+    if (__probeFlag === '1' || __probeFlag === 'ui') loadSparkModule('dom-probe');
+  } catch (e) { /* localStorage unavailable */ }
+
   /* ── Config ── */
   var OTHER_TOOLS_IDS = [
     'sb_email-marketing', 'sb_payments', 'sb_sites',
@@ -189,17 +223,8 @@
     ],
   };
 
-  /* ── Account-specific overrides ── */
-  var ACCOUNT_OVERRIDES = {
-    'UxgO7LJMqUWOZmiy5JOu': {
-      hide: ['sb_dashboard'],
-      firstItem: '88d8d11c-d99b-41dd-9f4f-d8a367ccde33'
-    },
-    'NdzeZDCKa8NmcmwsCU8T': {
-      hide: ['sb_dashboard'],
-      firstItem: 'f077df9a-3363-44ff-a15e-c554081ed5a9'
-    }
-  };
+  /* Account-specific overrides now live in dist/modules/account-overrides.js
+     and are read from window.__SPARK_ACCOUNT_OVERRIDES at apply time. */
 
   var folderOpen = false;
   var expandedMenus = {};
@@ -337,7 +362,7 @@
 
     /* ── Account-specific overrides ── */
     var accountId = getAccountId();
-    var overrides = ACCOUNT_OVERRIDES[accountId];
+    var overrides = (window.__SPARK_ACCOUNT_OVERRIDES || {})[accountId];
     if (overrides) {
       sidebar.setAttribute('data-spark-account', accountId);
       if (overrides.hide) {
@@ -576,7 +601,7 @@
 
   /* ── Load Onboarding Widget (v2 — wizard SETUP+TOUR) ── */
   var obScript = document.createElement('script');
-  obScript.src = 'https://dist-iota-one-53.vercel.app/spark-onboarding.js?v=2';
+  obScript.src = __sparkBaseUrl + 'spark-onboarding.js?v=2';
   document.head.appendChild(obScript);
 
 })();
