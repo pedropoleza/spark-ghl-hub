@@ -599,9 +599,14 @@
   /* Initial */
   setTimeout(checkAndApply, 500);
 
-  /* ── Load Onboarding Widget (v2 — wizard SETUP+TOUR) ── */
+  /* ── Load Onboarding Widget (v3 — re-skin teal Spark OS + fluxo Victor) ── */
   var obScript = document.createElement('script');
-  obScript.src = __sparkBaseUrl + 'spark-onboarding.js?v=2';
+  obScript.src = __sparkBaseUrl + 'spark-onboarding.js?v=22';
   document.head.appendChild(obScript);
+
+  /* ── Load Zoom Connect module (sidebar link "Resumos IA" + connect wizard) ── */
+  var zoomScript = document.createElement('script');
+  zoomScript.src = __sparkBaseUrl + 'spark-zoom.js?v=1';
+  document.head.appendChild(zoomScript);
 
 })();

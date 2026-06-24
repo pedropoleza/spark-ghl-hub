@@ -25,14 +25,23 @@
     url: 'https://tbziahcpkrfiksqhuhpe.supabase.co',
     key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRiemlhaGNwa3JmaWtzcWh1aHBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2MDIyOTAsImV4cCI6MjA3NzE3ODI5MH0.17eqja9Gab-K757ZGy5WvDvVngXzDGvFV1WSlirwJX4',
   };
+  // Sinais de ativação (AI Agent Hub) — RPC get_onboarding_signals, anon, boolean-only
+  var SIGNALS_DB = {
+    url: 'https://vyfkpdnwevtuxauacouj.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5ZmtwZG53ZXZ0dXhhdWFjb3VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODgwNDYsImV4cCI6MjA5MTA2NDA0Nn0.vN-mnwB4kG9DXVPnXkec1Wxbp0HKpYzrZ7dSJot_CAY',
+  };
+  var FIVERINGS_EXT_URL = 'https://chromewebstore.google.com/detail/five-rings-financial-sync/emdahpiepkhilcpgompfkeneokcmcobc';
+  var FIVERINGS_PORTAL_URL = 'https://portal.fiveringsfinancial.com/';
+  var WHATSAPP_LINK_UUID = 'b967c18f-cfa6-4cb1-aa2a-340a1d2a5dfa';
   var WIDGET_BASE = 'https://dist-iota-one-53.vercel.app';
-  var CSS_URL = WIDGET_BASE + '/spark-onboarding.css?v=2';
+  var CSS_URL = WIDGET_BASE + '/spark-onboarding.css?v=6';
   var DRIVER_JS = 'https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js';
   var DRIVER_CSS = 'https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css';
   var APPSTORE_URL = 'https://apps.apple.com/us/app/lead-connector/id1564302502';
   var PLAYSTORE_URL = 'https://play.google.com/store/apps/details?id=com.gohighlevel.leadconnector';
-  var ONBOARDING_LINK = 'https://link.exemplo.com'; // TODO Pedro: link real de agendamento 1:1
-  var STEPS_CACHE_KEY = 'sparkOnbV2:steps:2'; // bump do sufixo invalida cache em deploy
+  var COMMUNITY_URL = 'https://chat.whatsapp.com/DGgxI7WbFaa79hDuKXZIPv?mode=gi_t'; // Grupo WhatsApp da comunidade Spark (Pedro 2026-06-21)
+  var SPARKBOT_NUMBER = '+18134079657'; // SparkBot WhatsApp (confirmado por Pedro 2026-06-21)
+  var STEPS_CACHE_KEY = 'sparkOnbV2:steps:11'; // bump do sufixo invalida cache em deploy
   var STEPS_CACHE_TTL = 30 * 60 * 1000;
   var PLAN_RANK = { starter: 0, growth: 1, agency: 2 };
 
@@ -59,7 +68,8 @@
     return '<svg viewBox="0 0 24 24" fill="' + (fill ? 'currentColor' : 'none') + '" stroke="' + (fill ? 'none' : 'currentColor') + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
   };
   var I = {
-    spark: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5Z"/><path d="M18.5 13c.2 1.6.9 2.3 2.5 2.5-1.6.2-2.3.9-2.5 2.5-.2-1.6-.9-2.3-2.5-2.5 1.6-.2 2.3-.9 2.5-2.5Z"/></svg>',
+    // marca Spark = raio (Zap, lucide), preenchido pra contrastar no quadrado teal
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.2a.7.7 0 0 0 .56 1.12H11l-1 7.66a.35.35 0 0 0 .63.26L19.5 10.8a.7.7 0 0 0-.56-1.12H13l1-7.4a.35.35 0 0 0-.63-.28Z"/></svg>',
     rocket: S('<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 -.2Z"/><path d="M12 15l-3-3a14 14 0 0 1 7-9 6.5 6.5 0 0 1 5 5 14 14 0 0 1-9 7Z"/><path d="M9 12H4s.5-2.8 2-4c1.7-1.3 4 0 4 0"/><path d="M12 15v5s2.8-.5 4-2c1.3-1.7 0-4 0-4"/><circle cx="15" cy="9" r="1.2"/>'),
     clock: S('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
     checklist: S('<path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="m3 6 1.2 1.2L6.5 5"/><path d="m3 12 1.2 1.2L6.5 11"/><path d="m3 18 1.2 1.2L6.5 17"/>'),
@@ -75,6 +85,7 @@
     building: S('<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 21v-4h6v4"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2"/>'),
     user: S('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>'),
     phone: S('<path d="M6.5 4h3l1.2 4-2 1.4a11 11 0 0 0 5 5l1.4-2 4 1.2v3a1.6 1.6 0 0 1-1.8 1.6A15.5 15.5 0 0 1 5 6.8 1.6 1.6 0 0 1 6.5 4Z"/>'),
+    video: S('<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/>'),
     mobile: S('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>'),
     apple: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.7 12.8c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-0.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3.1 2.4 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.6-1-2.7-3.9ZM14.4 5.6c.7-.8 1.1-1.9 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4Z"/></svg>',
     android: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.8 9.5c-.7 0-1.3.6-1.3 1.3v5.4a1.3 1.3 0 0 0 2.6 0v-5.4c0-.7-.6-1.3-1.3-1.3Zm16.4 0c-.7 0-1.3.6-1.3 1.3v5.4a1.3 1.3 0 0 0 2.6 0v-5.4c0-.7-.6-1.3-1.3-1.3ZM6 9.3v8.2c0 .8.6 1.4 1.4 1.4h1v3a1.3 1.3 0 0 0 2.6 0v-3h2v3a1.3 1.3 0 0 0 2.6 0v-3h1c.8 0 1.4-.6 1.4-1.4V9.3H6Zm9.8-4.6.9-1.6a.3.3 0 0 0-.5-.3l-.9 1.7a6.3 6.3 0 0 0-5.6 0l-1-1.7a.3.3 0 0 0-.4.3l.9 1.6A5.3 5.3 0 0 0 6 8.6h12a5.3 5.3 0 0 0-2.2-3.9ZM9.5 7.1a.6.6 0 1 1 0-1.2.6.6 0 0 1 0 1.2Zm5 0a.6.6 0 1 1 0-1.2.6.6 0 0 1 0 1.2Z"/></svg>',
@@ -107,9 +118,36 @@
     'tour-opportunities': 'target', 'tour-prospects': 'target', 'tour-policies': 'shield',
     'tour-recruiting': 'handshake', 'tour-agency-view': 'layers',
     'tour-conversations-overview': 'message', 'tour-conversations-left': 'message',
-    'tour-conversations-middle': 'message', 'tour-conversations-webphones': 'phone',
-    'tour-conversations-right': 'checklist', 'tour-dashboard': 'chart', 'tour-finalization': 'rocket',
+    'tour-conversations-middle': 'message',
+    'tour-conversations-right': 'checklist', 'tour-dashboard': 'chart',
+    'tour-community': 'whatsapp', 'tour-finalization': 'rocket',
   };
+
+  /* ── Itens de ativação (Camada 1) — ordem por VALOR, plano-aware.
+     detect: chave do sinal real (get_onboarding_signals) | 'manual'.
+     action: 'redirect' (navega + dock + spotlight) | 'sparkbot' | 'fiverings'. ── */
+  /* Itens de CONFIGURAÇÃO (Parte 1) — checklist plano-aware. Pedro 2026-06-22: setup separado do tour.
+     Todas as telas de settings são noSpotlight (campos voláteis): navega + instrução no dock + "Já fiz".
+     whatsapp tem detecção real (whatsapp_connected); o resto é manual. */
+  var ACTIVATION_ITEMS = [
+    { key: 'account', icon: 'building', plan_min: 'starter', action: 'redirect',
+      path: '/settings/company', detect: 'manual', noSpotlight: true, mark: { selector_guesses: [] } },
+    { key: 'whatsapp', icon: 'whatsapp', plan_min: 'starter', action: 'redirect',
+      path: '/custom-menu-link/' + WHATSAPP_LINK_UUID, detect: 'whatsapp_connected',
+      // QR de conexão fica num iframe cross-origin do Stevo (inalcançável) — instrução-only.
+      noSpotlight: true, mark: { selector_guesses: [] } },
+    { key: 'calconnect', icon: 'calendar', plan_min: 'starter', action: 'redirect',
+      path: '/settings/calendars/connections', detect: 'manual', noSpotlight: true, mark: { selector_guesses: [] } },
+    { key: 'availability', icon: 'clock', plan_min: 'starter', action: 'redirect',
+      path: '/settings/calendars/availability', detect: 'manual', noSpotlight: true, mark: { selector_guesses: [] } },
+    { key: 'zoom', icon: 'video', plan_min: 'starter', action: 'redirect',
+      path: '/settings/calendars/connections', detect: 'manual', noSpotlight: true, mark: { selector_guesses: [] } },
+    { key: 'fiverings', icon: 'database', plan_min: 'growth', action: 'fiverings', detect: 'manual' },
+    { key: 'automations', icon: 'repeat', plan_min: 'starter', action: 'redirect',
+      path: '/automation/workflows', detect: 'manual', noSpotlight: true, mark: { selector_guesses: [] } },
+    { key: 'telephony', icon: 'phone', plan_min: 'growth', action: 'redirect',
+      path: '/settings/phone_system?tab=manage', detect: 'manual', noSpotlight: true, mark: { selector_guesses: [] } },
+  ];
 
   /* ── i18n (chrome do widget; conteúdo dos steps vem do DB) ─ */
   var UI = {
@@ -123,10 +161,48 @@
       w_title: 'Bem-vindo ao Spark Leads',
       w_sub: 'Vamos configurar sua conta em alguns minutos',
       w_time: '~20 minutos', w_time_sub: 'Configuração + tour completo, tudo guiado',
-      w_items: function (s, t) { return s + ' configurações + ' + t + ' telas de tour'; },
+      w_items: function (a, t) { return a + ' passos de ativação + ' + t + ' telas de tour'; },
       w_items_sub: 'Passo a passo, no seu ritmo',
       w_plan_sub: 'Seu plano',
       w_start: 'Começar', w_skip: 'Deixar pra depois',
+      /* conceito (Camada 0 — modelo mental) — prefixo cn_ pra não colidir com c_ do completion */
+      cn_eyebrow: 'Como o Spark funciona',
+      cn_title: 'Tudo gira em torno do Contato',
+      cn_sub: 'O SparkBot é o seu funcionário: ele fala com cada contato no WhatsApp, qualifica e agenda. E tudo vira um card no seu funil, do primeiro oi até virar cliente.',
+      cn_node_contact: 'Contato', cn_node_contact_sub: 'a base de tudo',
+      cn_node_bot: 'SparkBot', cn_node_bot_sub: 'fala no WhatsApp',
+      cn_node_funnel: 'Funil', cn_node_funnel_sub: 'do oi ao cliente',
+      cn_start: 'Bora ativar', cn_later: 'Agora não',
+      /* ativação (Camada 1) */
+      act_eyebrow: 'Configuração',
+      act_title: 'Configure sua conta',
+      act_sub: 'Passos rápidos pra deixar tudo pronto. Faça cada um no Spark e marque aqui (o WhatsApp eu confirmo sozinho).',
+      act_account_created: 'Conta criada',
+      act_progress: function (d, t) { return d + ' de ' + t; },
+      act_doing: 'Fazendo no Spark', act_detecting: 'Verificando', act_done_label: 'Feito',
+      act_mark_done: 'Já fiz', act_open: 'Abrir',
+      act_done_title: 'Tudo configurado!', act_done_sub: 'Conta pronta e o Spark no jeito. Agora bora conhecer a plataforma.',
+      act_tour_cta: 'Conhecer a plataforma', act_tour_later: 'Agora não',
+      it_whatsapp_t: 'Conecte o WhatsApp', it_whatsapp_d: 'Pro SparkBot responder seus leads 24 horas por dia.', it_whatsapp_c: 'Conectar',
+      it_whatsapp_dock: 'Aponte o WhatsApp do seu celular no QR Code da tela pra conectar. Quando conectar, eu marco aqui sozinho.',
+      it_account_t: 'Dados da conta', it_account_d: 'Nome, telefone, fuso e idioma do negócio.', it_account_c: 'Preencher',
+      it_account_dock: 'Preencha o nome do negócio, telefone, fuso horário e idioma e salve. Marco aqui quando você terminar.',
+      it_calconnect_t: 'Conecte seu calendário', it_calconnect_d: 'Ligue o Google ou Outlook pro Spark ver sua agenda.', it_calconnect_c: 'Conectar',
+      it_calconnect_dock: 'Na aba Connections, conecte seu calendário (Google ou Outlook). Marco aqui quando você terminar.',
+      it_availability_t: 'Defina a disponibilidade', it_availability_d: 'Os horários em que você aceita reunião.', it_availability_c: 'Definir',
+      it_availability_dock: 'Na aba Availability, marque os dias e horários em que aceita reunião. O SparkBot usa isso pra sugerir slots aos leads. Marco aqui quando você terminar.',
+      it_zoom_t: 'Conecte o Zoom', it_zoom_d: 'Pras reuniões gerarem link automático.', it_zoom_c: 'Conectar',
+      it_zoom_dock: 'Na aba Connections, abra Video conferencing e conecte o Zoom. Marco aqui quando você terminar.',
+      it_automations_t: 'Revise as automações', it_automations_d: 'Veja o que já vem ligado e ajuste.', it_automations_c: 'Revisar',
+      it_automations_dock: 'Confira os workflows que já vêm ligados (nurturing, follow-ups, boas-vindas) e desligue o que não quiser. Marco aqui quando você terminar.',
+      it_telephony_t: 'Habilite a telefonia', it_telephony_d: 'Ligue as chamadas e o WhatsApp Calling.', it_telephony_c: 'Ativar',
+      it_telephony_dock: 'Ative as chamadas, incluindo o WhatsApp Calling, pra falar com leads sem sair do Spark. Marco aqui quando você terminar.',
+      it_sparkbot_t: 'Fale com o SparkBot', it_sparkbot_d: 'Mande uma mensagem e veja ele responder na hora.', it_sparkbot_c: 'Abrir SparkBot',
+      it_fiverings_t: 'Sincronize a Five Rings', it_fiverings_d: 'Instale a extensão e abra o portal pra trazer seus clientes pro Spark.', it_fiverings_c: 'Instalar extensão',
+      it_fiverings_step2: 'Agora abra o portal Five Rings pra começar a sincronizar.', it_fiverings_c2: 'Abrir portal',
+      it_contact_t: 'Salve seu 1º contato', it_contact_d: 'Crie o Suporte Spark e veja como é rápido cadastrar uma pessoa.', it_contact_c: 'Criar contato',
+      it_contact_sample: 'Nome: Suporte Spark · Telefone: +1 786 627 6787 (celular, Estados Unidos)',
+      sparkbot_prompt: 'Pergunte ao SparkBot: quais meus contatos novos hoje?',
       c_title: 'Pronto, sua conta tá configurada!',
       c_sub: 'Você já conhece o essencial do Spark Leads. Bora pro trabalho!',
       c_done_label: 'concluídos', c_skip_label: 'pulados',
@@ -140,10 +216,9 @@
       dock_done: 'Marcar feito', dock_tour: 'Ver na tela', dock_stop: 'Parar tour',
       dock_back: 'Voltar ao guia', dock_min_aria: 'Minimizar', dock_expand_aria: 'Detalhes',
       dock_resume: 'Continuar', dock_practice: 'Pratique agora',
-      dock_no_targets: 'Não achei os elementos nessa tela — siga as instruções e marque feito quando terminar.',
+      dock_no_targets: 'Não achei os elementos nessa tela. Siga as instruções e marque feito quando terminar.',
       dock_nav_hint: 'Te levei pra tela certa. Siga os destaques!',
       transition_done: 'Setup completo!',
-      schedule_btn: 'Agendar onboarding 1:1',
       driver_next: 'Próximo', driver_prev: 'Anterior', driver_done: 'Entendi',
     },
     en: {
@@ -156,11 +231,49 @@
       w_title: 'Welcome to Spark Leads',
       w_sub: 'Let’s set up your account in just a few minutes',
       w_time: '~20 minutes', w_time_sub: 'Setup + full tour, fully guided',
-      w_items: function (s, t) { return s + ' setup items + ' + t + ' tour screens'; },
+      w_items: function (a, t) { return a + ' activation steps + ' + t + ' tour screens'; },
       w_items_sub: 'Step by step, at your pace',
       w_plan_sub: 'Your plan',
       w_start: 'Get started', w_skip: 'Maybe later',
-      c_title: 'Done — your account is all set!',
+      /* concept (Layer 0 — mental model) — cn_ prefix to avoid colliding with completion's c_ */
+      cn_eyebrow: 'How Spark works',
+      cn_title: 'Everything revolves around the Contact',
+      cn_sub: 'SparkBot is your employee: it talks to every contact on WhatsApp, qualifies and books. And it all becomes a card in your funnel, from the first hello to a closed client.',
+      cn_node_contact: 'Contact', cn_node_contact_sub: 'the base of it all',
+      cn_node_bot: 'SparkBot', cn_node_bot_sub: 'talks on WhatsApp',
+      cn_node_funnel: 'Funnel', cn_node_funnel_sub: 'from hi to client',
+      cn_start: 'Let’s activate', cn_later: 'Not now',
+      /* activation (Layer 1) */
+      act_eyebrow: 'Setup',
+      act_title: 'Set up your account',
+      act_sub: 'Quick steps to get everything ready. Do each one in Spark and mark it here (WhatsApp I confirm on my own).',
+      act_account_created: 'Account created',
+      act_progress: function (d, t) { return d + ' of ' + t; },
+      act_doing: 'Doing it in Spark', act_detecting: 'Checking', act_done_label: 'Done',
+      act_mark_done: 'I did it', act_open: 'Open',
+      act_done_title: 'All set up!', act_done_sub: 'Account ready and Spark good to go. Now let us tour the platform.',
+      act_tour_cta: 'Explore the platform', act_tour_later: 'Not now',
+      it_whatsapp_t: 'Connect WhatsApp', it_whatsapp_d: 'So SparkBot answers your leads 24 hours a day.', it_whatsapp_c: 'Connect',
+      it_whatsapp_dock: 'Point your phone WhatsApp at the QR Code on screen to connect. Once it connects, I check this off automatically.',
+      it_account_t: 'Account basics', it_account_d: 'Business name, phone, timezone and language.', it_account_c: 'Fill in',
+      it_account_dock: 'Fill in your business name, phone, timezone and language, then save. I check this off when you are done.',
+      it_calconnect_t: 'Connect your calendar', it_calconnect_d: 'Link Google or Outlook so Spark sees your schedule.', it_calconnect_c: 'Connect',
+      it_calconnect_dock: 'On the Connections tab, connect your calendar (Google or Outlook). I check this off when you are done.',
+      it_availability_t: 'Set availability', it_availability_d: 'The hours you accept meetings.', it_availability_c: 'Set',
+      it_availability_dock: 'On the Availability tab, set the days and hours you accept meetings. SparkBot uses this to suggest slots to leads. I check this off when you are done.',
+      it_zoom_t: 'Connect Zoom', it_zoom_d: 'So meetings get a link automatically.', it_zoom_c: 'Connect',
+      it_zoom_dock: 'On the Connections tab, open Video conferencing and connect Zoom. I check this off when you are done.',
+      it_automations_t: 'Review automations', it_automations_d: 'See what is on and adjust.', it_automations_c: 'Review',
+      it_automations_dock: 'Check the workflows already on (nurturing, follow-ups, welcomes) and turn off what you do not want. I check this off when you are done.',
+      it_telephony_t: 'Enable calling', it_telephony_d: 'Turn on calls and WhatsApp Calling.', it_telephony_c: 'Enable',
+      it_telephony_dock: 'Enable calling, including WhatsApp Calling, to reach leads without leaving Spark. I check this off when you are done.',
+      it_sparkbot_t: 'Talk to SparkBot', it_sparkbot_d: 'Send a message and watch it reply instantly.', it_sparkbot_c: 'Open SparkBot',
+      it_fiverings_t: 'Sync Five Rings', it_fiverings_d: 'Install the extension and open the portal to bring your clients into Spark.', it_fiverings_c: 'Install extension',
+      it_fiverings_step2: 'Now open the Five Rings portal to start syncing.', it_fiverings_c2: 'Open portal',
+      it_contact_t: 'Save your 1st contact', it_contact_d: 'Create Spark Support and see how fast it is to add someone.', it_contact_c: 'Create contact',
+      it_contact_sample: 'Name: Spark Support · Phone: +1 786 627 6787 (mobile, United States)',
+      sparkbot_prompt: 'Ask SparkBot: who are my new contacts today?',
+      c_title: 'Done, your account is all set!',
       c_sub: 'You now know the essentials of Spark Leads. Let’s get to work!',
       c_done_label: 'completed', c_skip_label: 'skipped',
       c_summary: 'See what was done',
@@ -173,10 +286,9 @@
       dock_done: 'Mark done', dock_tour: 'Show me', dock_stop: 'Stop tour',
       dock_back: 'Back to guide', dock_min_aria: 'Minimize', dock_expand_aria: 'Details',
       dock_resume: 'Resume', dock_practice: 'Try it now',
-      dock_no_targets: 'Couldn’t find the elements on this screen — follow the instructions and mark done when finished.',
+      dock_no_targets: 'Couldn’t find the elements on this screen. Follow the instructions and mark done when finished.',
       dock_nav_hint: 'I brought you to the right screen. Follow the highlights!',
       transition_done: 'Setup complete!',
-      schedule_btn: 'Book 1:1 onboarding',
       driver_next: 'Next', driver_prev: 'Previous', driver_done: 'Got it',
     },
   };
@@ -201,6 +313,23 @@
       return r;
     }).catch(function (e) { console.warn('[SparkOnb] save fail', e); });
   }
+  // INSERT idempotente (ON CONFLICT location_id DO NOTHING via PostgREST). Usado no self-provision
+  // do 1o login. Conflito = row já existe (cron ou outra aba) = no-op silencioso.
+  function sbInsert(db, path, body) {
+    return fetch(db.url + '/rest/v1/' + path, {
+      method: 'POST',
+      headers: {
+        apikey: db.key, Authorization: 'Bearer ' + db.key,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=ignore-duplicates,return=minimal',
+      },
+      body: JSON.stringify(body),
+      keepalive: true,
+    }).then(function (r) {
+      if (!r.ok) console.warn('[SparkOnb] provision HTTP ' + r.status);
+      return r;
+    }).catch(function (e) { console.warn('[SparkOnb] provision fail', e); });
+  }
 
   function loadSteps() {
     try {
@@ -220,6 +349,16 @@
   function loadProgress(locId) {
     return sbGet(PROGRESS_DB, 'onboarding_progress?location_id=eq.' + encodeURIComponent(locId) + '&select=*&limit=1')
       .then(function (rows) { return rows && rows[0] ? rows[0] : null; });
+  }
+
+  /* sinais de ativação REAIS (RPC boolean-only na AI Agent Hub) */
+  function loadSignals(locId) {
+    return fetch(SIGNALS_DB.url + '/rest/v1/rpc/get_onboarding_signals', {
+      method: 'POST',
+      headers: { apikey: SIGNALS_DB.key, Authorization: 'Bearer ' + SIGNALS_DB.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_location_id: locId }),
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
   }
 
   /* ── Coach marks (Driver.js wrapper) ────────────────────── */
@@ -308,6 +447,17 @@
           popoverClass: 'spark-driver',
           overlayColor: 'rgba(0, 0, 0, 0.65)',
           stagePadding: 6,
+          // GHL/FullCalendar refluem no scroll — o pulo desalinha o recorte. Sem smooth scroll.
+          smoothScroll: false,
+          // Fix bug observado em prod 2026-06-21: GHL é Vue SPA e reflui async DEPOIS do highlight
+          // (FullCalendar resize, painel Manage view, kanban). O recorte do Driver ficava no lugar
+          // velho = "spotlight errado". Re-pina o stage no elemento conforme o GHL assenta.
+          onHighlighted: function () {
+            // só re-pina se este driver ainda é o ativo — evita refresh fantasma pós-destroy (auditoria 2026-06-22)
+            [120, 360, 760].forEach(function (ms) {
+              setTimeout(function () { try { if (self._active === d) d.refresh(); } catch (e) {} }, ms);
+            });
+          },
           steps: steps,
           onDestroyStarted: function () {
             finished = !d.hasNextStep();
@@ -344,13 +494,29 @@
   }
 
   /* aguarda algum target dos coach marks aparecer no DOM.
-     achou o primeiro → segura +900ms pra página hidratar (evita tour parcial) */
+     achou o primeiro → segura +900ms pra página hidratar (evita tour parcial).
+     GHL é SPA com render assíncrono lento (lista de contatos pode levar >15s ou
+     travar em branco). Por isso o default subiu pra 20s + degradação graciosa no caller. */
+  /* Fecha drawers/painéis nativos do GHL que espremem a área útil e bagunçam o recorte do
+     spotlight. Fix bug observado em prod 2026-06-21: o drawer "Manage view" do calendário
+     deixava a grade em ~523px (cheia é ~843) e o Driver capturava o stage torto. Seguro:
+     só age quando o drawer existe (= painel aberto), nunca abre por engano. */
+  function tidyHostUi() {
+    try {
+      var drawer = document.querySelector('#calendar-view-filter-drawer');
+      var toggle = document.querySelector('#customizations-button');
+      if (drawer && toggle && toggle.offsetParent !== null) toggle.click();
+    } catch (e) {}
+  }
+
   function waitForTargets(marks, timeoutMs) {
+    timeoutMs = timeoutMs || 20000;
     return new Promise(function (resolve) {
       var t0 = Date.now();
       (function poll() {
         for (var i = 0; i < (marks || []).length; i++) {
           if (Coach.resolveMark(marks[i])) {
+            tidyHostUi();  // fecha o painel que espreme a tela antes do settle + captura
             return setTimeout(function () { resolve(true); }, 900);
           }
         }
@@ -372,14 +538,19 @@
     this.screen = ws.screen || 'welcome';
     this.mode = ws.mode || 'fullscreen';   // fullscreen | dock
     this.everOpened = !!ws.screen;          // wizard_state vazio = primeira visita
+    this.actDone = new Set(ws.activation || []);  // itens de ativação concluídos (Camada 1)
+    this._actDoing = null;
     this._dir = 'fwd';
     this._navToken = 0;
     var rank = PLAN_RANK[this.plan] != null ? PLAN_RANK[this.plan] : 0;
-    this.steps = allSteps.filter(function (s) { return (PLAN_RANK[s.plan_min] || 0) <= rank; });
+    // wizard = TOUR do Victor (a ativação substituiu os setup steps na v4)
+    this.steps = allSteps.filter(function (s) { return (PLAN_RANK[s.plan_min] || 0) <= rank && s.step_phase === 'tour'; });
     // resume por id (não por índice) — lista de steps pode mudar no DB entre sessões
+    this._activeResolved = true;
     if (ws.active_step) {
+      this._activeResolved = false; // só restaura dock se o active_step persistido ainda existir na lista do plano
       for (var i = 0; i < this.steps.length; i++) {
-        if (this.steps[i].id === ws.active_step) { this.index = i; break; }
+        if (this.steps[i].id === ws.active_step) { this.index = i; this._activeResolved = true; break; }
       }
     }
     if (this.index >= this.steps.length) this.index = Math.max(0, this.steps.length - 1);
@@ -406,7 +577,10 @@
     pendingCount: function () {
       var handled = 0, self = this;
       this.steps.forEach(function (s) { if (self.completed.has(s.id) || self.skipped.has(s.id)) handled++; });
-      return Math.max(0, this.steps.length - handled);
+      var tourPending = Math.max(0, this.steps.length - handled);
+      var actPending = this.activationItems().filter(function (i) { return !self.actDone.has(i.key); }).length;
+      // enquanto a ativação não fecha, o badge mostra os passos de ativação (prioridade)
+      return actPending > 0 ? actPending : tourPending;
     },
     setupCount: function () { return this.steps.filter(function (s) { return s.step_phase === 'setup'; }).length; },
     tourCount: function () { return this.steps.filter(function (s) { return s.step_phase === 'tour'; }).length; },
@@ -467,9 +641,270 @@
     render: function (animate) {
       this.sparkEl.classList.toggle('anim-on', !reduceMotion() && document.visibilityState !== 'hidden');
       clear(this.sparkEl);
-      if (this.screen === 'welcome') this._renderWelcome();
+      if (this.screen === 'concept') this.screen = 'activation'; // conceito removido (Pedro 2026-06-22): normaliza estado legado
+      if (this.screen === 'activation') this._renderActivation();
+      else if (this.screen === 'welcome') this._renderWelcome();
       else if (this.screen === 'done') this._renderDone();
       else this._renderWizard(animate !== false);
+    },
+
+    /* ====================================================
+       CAMADA 1 — ATIVAÇÃO (checklist de eventos reais)
+       ==================================================== */
+    activationItems: function () {
+      var rank = PLAN_RANK[this.plan] != null ? PLAN_RANK[this.plan] : 0;
+      return ACTIVATION_ITEMS.filter(function (i) { return (PLAN_RANK[i.plan_min] || 0) <= rank; });
+    },
+    itemText: function (key, field) {
+      // it_<key>_<t|d|c> nas strings i18n
+      var map = { t: 't', d: 'd', c: 'c' };
+      return this.ui()['it_' + key + '_' + map[field]] || key;
+    },
+    actAllDone: function () {
+      var self = this;
+      return this.activationItems().every(function (i) { return self.actDone.has(i.key); });
+    },
+
+    _renderActivation: function () {
+      var u = this.ui(), self = this;
+      var items = this.activationItems();
+      var total = items.length;
+      var doneN = items.filter(function (i) { return self.actDone.has(i.key); }).length;
+      // progresso endossado: "conta criada" conta como passo grátis (Zeigarnik / endowed progress)
+      var pct = Math.round(((doneN + 1) / (total + 1)) * 100);
+      var planLabel = this.plan.toUpperCase();
+
+      if (this.actAllDone()) return this._renderActivationDone();
+
+      var rows = items.map(function (it) {
+        var done = self.actDone.has(it.key);
+        var doing = self._actDoing === it.key;
+        var ic = I[it.icon] || I.sparkles;
+        var statusHtml;
+        if (done) statusHtml = '<div class="act-row__check">' + I.check + '</div>';
+        else if (doing) statusHtml = '<span class="act-row__detect">' + (it.detect !== 'manual' ? esc(u.act_detecting) : '') +
+          '<span class="dots"><span></span><span></span><span></span></span></span>' +
+          (it.detect === 'manual' ? '<button class="btn btn--sm act-row__manual" data-k="' + it.key + '">' + esc(u.act_mark_done) + '</button>' : '');
+        else statusHtml = '<button class="btn btn--sm btn--primary act-row__cta" data-k="' + it.key + '">' + esc(self.itemText(it.key, 'c')) + I.arrowRight + '</button>';
+        return '<div class="act-row' + (done ? ' is-done' : '') + (doing ? ' is-doing' : '') + '">' +
+          '<div class="act-row__ic">' + ic + '</div>' +
+          '<div class="act-row__tx"><b>' + esc(self.itemText(it.key, 't')) + '</b><span>' + esc(self.itemText(it.key, 'd')) + '</span></div>' +
+          '<div class="act-row__status">' + statusHtml + '</div>' +
+        '</div>';
+      }).join('');
+
+      var node = el('<div class="welcome activation">' +
+        '<header class="wiz__top act__top">' +
+          '<div class="wiz__brand"><span class="spark-logo">' + I.spark + '</span><span class="wiz__brand-tx">' + esc(u.config) + '</span></div>' +
+          '<div class="act__lang"></div>' +
+          '<div class="wiz__top-right"><span class="plan-badge plan-badge--' + this.plan + '">' + planLabel + '</span>' +
+            '<button class="icon-btn act__close" aria-label="' + esc(u.close_aria) + '">' + I.x + '</button></div>' +
+        '</header>' +
+        '<div class="act__body"><div class="act__inner">' +
+          '<div class="act__eyebrow">' + esc(u.act_eyebrow) + '</div>' +
+          '<h1 class="act__title">' + esc(u.act_title) + '</h1>' +
+          '<p class="act__sub">' + esc(u.act_sub) + '</p>' +
+          '<div class="act__progress"><div class="act__progress-bar"><i style="width:' + pct + '%"></i></div>' +
+            '<span class="act__progress-tx">' + esc(u.act_progress(doneN, total)) + '</span></div>' +
+          '<div class="act__list">' +
+            '<div class="act-row is-done act-row--free"><div class="act-row__ic">' + I.spark + '</div>' +
+              '<div class="act-row__tx"><b>' + esc(u.act_account_created) + '</b></div>' +
+              '<div class="act-row__status"><div class="act-row__check">' + I.check + '</div></div></div>' +
+            rows +
+          '</div>' +
+        '</div></div></div>');
+
+      node.querySelector('.act__lang').appendChild(this._langToggle());
+      node.querySelector('.act__close').onclick = function () { self._dismiss(); };
+      node.querySelectorAll('.act-row__cta').forEach(function (b) {
+        b.onclick = function () { self._startActivationItem(b.getAttribute('data-k')); };
+      });
+      node.querySelectorAll('.act-row__manual').forEach(function (b) {
+        b.onclick = function () { self._completeActivation(b.getAttribute('data-k')); };
+      });
+      this.sparkEl.appendChild(node);
+      this._pollSignals();
+    },
+
+    _renderActivationDone: function () {
+      var u = this.ui(), self = this;
+      var node = el('<div class="done-screen activation-done">' +
+        '<div class="confetti"></div>' +
+        '<div class="done-screen__inner">' +
+          '<div class="hero-ic hero-ic--80 hero-ic--success fade-up">' + I.checkCircle + '</div>' +
+          '<h1 class="welcome__title fade-up fade-up-1">' + esc(u.act_done_title) + ' <span style="font-size:0.9em">🎉</span></h1>' +
+          '<p class="welcome__sub fade-up fade-up-2">' + esc(u.act_done_sub) + '</p>' +
+          '<button class="btn btn--primary btn--lg done-cta fade-up fade-up-3" style="margin-top:28px">' + esc(u.act_tour_cta) + I.arrowRight + '</button>' +
+          '<button class="btn btn--text fade-up fade-up-3 act-done__later">' + esc(u.act_tour_later) + '</button>' +
+        '</div></div>');
+      node.querySelector('.done-cta').onclick = function () {
+        self.screen = 'wizard'; self.index = 0; self._dir = 'fwd'; self.render(); self.save();
+      };
+      node.querySelector('.act-done__later').onclick = function () { self._dismiss(); };
+      this.sparkEl.appendChild(node);
+      if (!reduceMotion()) this._confetti(node.querySelector('.confetti'), 44);
+    },
+
+    /* dispara a ação de um item (navega + dock + spotlight, ou abre link) */
+    _startActivationItem: function (key) {
+      var self = this;
+      var item = this.activationItems().filter(function (i) { return i.key === key; })[0];
+      if (!item) return;
+      this._actDoing = key;
+      if (item.action === 'sparkbot') {
+        // destaca o botão do SparkBot na tela + instrução
+        this.closeFullscreen();
+        this._actDockSimple(item, this.ui().sparkbot_prompt);
+        return;
+      }
+      if (item.action === 'fiverings') {
+        // 2 sub-passos: extensão → portal. Abre a Web Store; o portal vem no "abrir portal".
+        window.open(FIVERINGS_EXT_URL, '_blank', 'noopener');
+        this.closeFullscreen();
+        this._actDockFiveRings(item);
+        return;
+      }
+      // redirect: navega pra tela e mostra dock com o spotlight + ação real
+      this.closeFullscreen();
+      this._actDockRedirect(item);
+    },
+
+    /* dock simples (SparkBot): instrução + abrir + já fiz */
+    _actDockSimple: function (item, instruction) {
+      var self = this, u = this.ui();
+      this._removeDock(); this._removeFab();
+      var dock = el('<div class="spark-dock">' +
+        '<div class="spark-dock__bar">' +
+          '<div class="spark-dock__ic">' + (I[item.icon] || I.sparkles) + '</div>' +
+          '<div class="spark-dock__tx"><div class="spark-dock__title">' + esc(self.itemText(item.key, 't')) + '</div>' +
+            '<div class="spark-dock__sub">' + esc(instruction || self.itemText(item.key, 'd')) + '</div></div>' +
+          '<div class="spark-dock__actions">' +
+            '<button class="btn btn--sm d-open">' + I.eye + esc(u.act_open) + '</button>' +
+            '<button class="btn btn--sm btn--primary d-done">' + I.check + esc(u.act_mark_done) + '</button>' +
+            '<button class="icon-btn d-back" aria-label="' + esc(u.dock_back) + '">' + I.x + '</button>' +
+          '</div>' +
+        '</div></div>');
+      dock.querySelector('.d-open').onclick = function () {
+        var b = document.querySelector('#hl_header--copilot-icon, button[aria-label*="SparkBot"], button[aria-label*="Ask AI"]');
+        if (b) b.click();
+        Coach.run([{ order: 1, selector_guesses: item.mark.selector_guesses, title_pt: self.itemText(item.key, 't'), title_en: self.itemText(item.key, 't'), description_pt: instruction, description_en: instruction }], self.lang, function () {});
+      };
+      dock.querySelector('.d-done').onclick = function () { self._completeActivation(item.key); };
+      dock.querySelector('.d-back').onclick = function () { self.openFullscreen('activation'); };
+      this.root.appendChild(dock); this._dock = dock;
+      this._pollSignals();
+    },
+
+    _actDockFiveRings: function (item) {
+      var self = this, u = this.ui();
+      this._removeDock(); this._removeFab();
+      var step2 = false;
+      var dock = el('<div class="spark-dock">' +
+        '<div class="spark-dock__bar">' +
+          '<div class="spark-dock__ic">' + I.database + '</div>' +
+          '<div class="spark-dock__tx"><div class="spark-dock__title">' + esc(self.itemText('fiverings', 't')) + '</div>' +
+            '<div class="spark-dock__sub d-sub">' + esc(self.itemText('fiverings', 'd')) + '</div></div>' +
+          '<div class="spark-dock__actions">' +
+            '<button class="btn btn--sm d-next">' + I.externalLink + esc(u.it_fiverings_c2) + '</button>' +
+            '<button class="btn btn--sm btn--primary d-done">' + I.check + esc(u.act_mark_done) + '</button>' +
+            '<button class="icon-btn d-back" aria-label="' + esc(u.dock_back) + '">' + I.x + '</button>' +
+          '</div>' +
+        '</div></div>');
+      dock.querySelector('.d-next').onclick = function () {
+        window.open(FIVERINGS_PORTAL_URL, '_blank', 'noopener');
+        dock.querySelector('.d-sub').textContent = u.it_fiverings_step2;
+      };
+      dock.querySelector('.d-done').onclick = function () { self._completeActivation('fiverings'); };
+      dock.querySelector('.d-back').onclick = function () { self.openFullscreen('activation'); };
+      this.root.appendChild(dock); this._dock = dock;
+      void step2;
+    },
+
+    _actDockRedirect: function (item) {
+      var self = this, u = this.ui();
+      this._removeDock(); this._removeFab();
+      // noSpotlight: alvo inalcançável (ex: QR do WhatsApp em iframe cross-origin do Stevo).
+      // Navega pra tela e mostra só a instrução no dock — nunca um spotlight errado (Pedro 2026-06-22).
+      var noSpot = !!item.noSpotlight || !(item.mark && item.mark.selector_guesses && item.mark.selector_guesses.length);
+      var marks = noSpot ? [] : [{ order: 1, selector_guesses: item.mark.selector_guesses, title_pt: self.itemText(item.key, 't'), title_en: self.itemText(item.key, 't'), description_pt: self.itemText(item.key, 'd'), description_en: self.itemText(item.key, 'd') }];
+      var sample = item.key === 'contact' ? u.it_contact_sample : '';
+      var dockSub = noSpot ? (u['it_' + item.key + '_dock'] || self.itemText(item.key, 'd')) : u.dock_nav_hint;
+      var dock = el('<div class="spark-dock">' +
+        '<div class="spark-dock__bar">' +
+          '<div class="spark-dock__ic">' + (I[item.icon] || I.sparkles) + '</div>' +
+          '<div class="spark-dock__tx"><div class="spark-dock__title">' + esc(self.itemText(item.key, 't')) + '</div>' +
+            '<div class="spark-dock__sub">' + esc(dockSub) + '</div></div>' +
+          '<div class="spark-dock__actions">' +
+            (noSpot ? '' : '<button class="btn btn--sm d-tour">' + I.eye + esc(u.dock_tour) + '</button>') +
+            '<button class="btn btn--sm btn--primary d-done">' + I.check + esc(u.act_mark_done) + '</button>' +
+            '<button class="icon-btn d-back" aria-label="' + esc(u.dock_back) + '">' + I.x + '</button>' +
+          '</div>' +
+        '</div>' +
+        (sample ? '<div class="spark-dock__detail" style="display:block"><div class="practice-box"><div class="practice-box__head">' + I.sparkles + esc(u.dock_practice) + '</div><pre>' + esc(sample) + '</pre></div></div>' : '') +
+      '</div>');
+      var runTour = function () {
+        Coach.run(marks, self.lang, function (status) {
+          if (!document.body.contains(dock)) return;
+          if (status === 'no_targets' || status === 'no_driver') {
+            var sub = dock.querySelector('.spark-dock__sub'); if (sub) sub.textContent = u.dock_no_targets;
+          }
+        });
+      };
+      if (!noSpot) dock.querySelector('.d-tour').onclick = runTour;
+      dock.querySelector('.d-done').onclick = function () { self._completeActivation(item.key); };
+      dock.querySelector('.d-back').onclick = function () { Coach.stop(); self.openFullscreen('activation'); };
+      this.root.appendChild(dock); this._dock = dock;
+      if (item.path) {
+        navigateTo(item.path);
+        if (!noSpot) {
+          waitForTargets(marks, 20000).then(function (found) {
+            if (!document.body.contains(dock)) return;
+            if (found) runTour();
+            else { var sub = dock.querySelector('.spark-dock__sub'); if (sub) sub.textContent = u.dock_no_targets; }
+          });
+        }
+      }
+      this._pollSignals();
+    },
+
+    /* marca um item de ativação como feito (manual ou detecção) */
+    _completeActivation: function (key) {
+      this.actDone.add(key);
+      this._actDoing = null;
+      Coach.stop();
+      this._burstAtBody();
+      this.openFullscreen('activation');
+      this.save({ wizard_state: { concept_seen: true, screen: 'activation', mode: 'fullscreen', activation: Array.from(this.actDone) } });
+    },
+
+    _burstAtBody: function () { /* micro-celebração no centro */
+      if (reduceMotion()) return;
+      this._confetti(this.sparkEl, 14);
+    },
+
+    /* polling dos sinais reais (RPC) — flipa whatsapp/sparkbot quando o evento acontece */
+    _pollSignals: function () {
+      var self = this;
+      if (this._sigPoll) clearInterval(this._sigPoll);
+      var check = function () {
+        loadSignals(self.locId).then(function (sig) {
+          if (!sig) return;
+          var changed = false;
+          if (sig.whatsapp_connected && !self.actDone.has('whatsapp')) { self.actDone.add('whatsapp'); changed = true; }
+          if (changed) {
+            // Fix bug auditoria 2026-06-22: o sinal (whatsapp/sparkbot) costuma chegar enquanto o rep
+            // está no DOCK do item (host hidden). Antes só re-renderizava no fullscreen → o item não
+            // marcava sozinho, contradizendo "eu confirmo aqui quando acontecer". Agora traz o checklist.
+            var wasInActDock = self._actDoing != null && self.host.classList.contains('is-hidden');
+            self._actDoing = null;
+            self.save({ wizard_state: { concept_seen: true, screen: self.screen, mode: self.mode, activation: Array.from(self.actDone) } });
+            if (self.screen === 'activation' && !self.host.classList.contains('is-hidden')) self.render();
+            else if (wasInActDock) { self.openFullscreen('activation'); self._burstAtBody(); }
+          }
+        });
+      };
+      check();
+      this._sigPoll = setInterval(check, 6000);
     },
 
     /* ---- WELCOME ---- */
@@ -489,7 +924,7 @@
             '</div>' +
             '<div class="welcome__row">' +
               '<div class="welcome__row-ic">' + I.checklist + '</div>' +
-              '<div class="welcome__row-tx"><b>' + esc(u.w_items(this.setupCount(), this.tourCount())) + '</b><span>' + esc(u.w_items_sub) + '</span></div>' +
+              '<div class="welcome__row-tx"><b>' + esc(u.w_items(this.activationItems().length, this.tourCount())) + '</b><span>' + esc(u.w_items_sub) + '</span></div>' +
             '</div>' +
             '<div class="welcome__row">' +
               '<div class="welcome__row-ic">' + I.sparkles + '</div>' +
@@ -603,12 +1038,24 @@
     _mountStep: function (ctx) {
       var step = ctx.step;
       if (step.id === 'ob-st-3a') return this._mountQr(ctx);
-      if (step.id === 'ob-st-7') return this._mountTransition(ctx);
+      if (step.id === 'tour-community') return this._mountCommunityQr(ctx);
       if (step.id === 'ob-gr-2') return this._mountExamples(ctx);
-      if (step.id === 'tour-finalization') return this._mountFinalization(ctx);
       if (step.step_type === 'action') return this._mountAction(ctx);
       if (this.isRedirect(step)) return this._mountRedirectIntro(ctx);
       /* info simples: sem corpo extra */
+    },
+
+    /* QR único centralizado (comunidade) — preto no branco */
+    _mountCommunityQr: function (ctx) {
+      var src = 'https://api.qrserver.com/v1/create-qr-code/?size=312x312&margin=0&color=0B0B0F&bgcolor=FFFFFF&data=' + encodeURIComponent(COMMUNITY_URL);
+      var openLabel = this.lang === 'en' ? 'Open link' : 'Abrir link';
+      ctx.root.appendChild(el('<div class="qr-grid qr-grid--one">' +
+        '<div class="qr-card community-qr">' +
+          '<div class="qr-card__label">' + I.sparkles + ' Spark</div>' +
+          '<div class="qr-card__img"><img alt="QR comunidade Spark" loading="lazy" src="' + src + '"></div>' +
+          '<a class="btn btn--sm" href="' + COMMUNITY_URL + '" target="_blank" rel="noopener">' + I.externalLink + esc(openLabel) + '</a>' +
+        '</div>' +
+      '</div>'));
     },
 
     /* preview "o que você vai ver" + practice box */
@@ -643,10 +1090,10 @@
       '</div>'));
     },
 
-    /* QR codes do app móvel */
+    /* QR codes do app móvel — preto no branco (padrão do guia) */
     _mountQr: function (ctx) {
       var qr = function (data) {
-        return 'https://api.qrserver.com/v1/create-qr-code/?size=312x312&margin=0&data=' + encodeURIComponent(data);
+        return 'https://api.qrserver.com/v1/create-qr-code/?size=312x312&margin=0&color=0B0B0F&bgcolor=FFFFFF&data=' + encodeURIComponent(data);
       };
       var openLabel = this.lang === 'en' ? 'Open link' : 'Abrir link';
       ctx.root.appendChild(el('<div class="qr-grid">' +
@@ -664,15 +1111,6 @@
       void openLabel;
     },
 
-    /* transição setup → tour (ob-st-7): mini celebração */
-    _mountTransition: function (ctx) {
-      var u = this.ui();
-      ctx.root.appendChild(el('<div style="display:flex;flex-direction:column;align-items:center;gap:10px">' +
-        '<span class="phase-chip" style="height:30px;font-size:12px">' + I.checkCircle + esc(u.transition_done) + '</span>' +
-      '</div>'));
-      if (!reduceMotion()) this._confetti(this.sparkEl, 18);
-    },
-
     /* exemplos SparkBot (ob-gr-2): coach_marks viram cards */
     _mountExamples: function (ctx) {
       var self = this;
@@ -684,13 +1122,6 @@
         '</div>'));
       });
       ctx.root.appendChild(list);
-    },
-
-    /* finalização: CTA agendar 1:1 */
-    _mountFinalization: function (ctx) {
-      var u = this.ui();
-      var a = el('<a class="btn btn--lg" style="width:100%;max-width:340px;margin:0 auto" href="' + ONBOARDING_LINK + '" target="_blank" rel="noopener">' + I.calendar + esc(u.schedule_btn) + '</a>');
-      ctx.root.appendChild(a);
     },
 
     /* ativação SparkBot (ob-gr-1) — visual progressivo.
@@ -765,8 +1196,10 @@
        DOCK — modo navegação no GHL
        ==================================================== */
     enterDock: function (step) {
+      var i = this.steps.indexOf(step);
+      if (i < 0) return; // step fora da lista filtrada por plano — não entra em estado inválido (idx -1)
       this.mode = 'dock';
-      this.index = this.steps.indexOf(step);
+      this.index = i;
       this.closeFullscreen();
       this.save(); // antes do navigate — fallback full-reload abortaria o PATCH
       this._renderDock(step, { navigate: true });
@@ -782,9 +1215,12 @@
       var pct = ((idx + 1) / this.steps.length) * 100;
       var desc = this.t(step, 'description');
       var marks = (step.coach_marks || []);
+      // só fazem spotlight ao vivo os marks COM seletor. Marks sem seletor (telas de config/conversas
+      // não-mapeadas) viram instrução-only: navega + mostra a descrição, sem "Ver na tela" nem timeout 20s.
+      var liveMarks = marks.filter(function (m) { return (m.selector_guesses || []).length; });
       var hasPractice = !!step.practice_action;
-      // resume sem navigate: mostra a descrição do step, não "te levei pra tela certa"
-      var subTxt = opts.navigate ? u.dock_nav_hint : (desc || u.dock_nav_hint);
+      // resume sem navigate (ou navigate sem spotlight): mostra a descrição, não "te levei pra tela certa"
+      var subTxt = (opts.navigate && liveMarks.length) ? u.dock_nav_hint : (desc || u.dock_nav_hint);
 
       var dock = el('<div class="spark-dock">' +
         '<div class="spark-dock__progress"><i style="width:' + pct + '%"></i></div>' +
@@ -796,7 +1232,7 @@
           '</div>' +
           '<div class="spark-dock__actions">' +
             ((desc || hasPractice) ? '<button class="icon-btn d-expand" aria-label="' + esc(u.dock_expand_aria) + '">' + I.chevronUp + '</button>' : '') +
-            (marks.length ? '<button class="btn btn--sm d-tour">' + I.eye + esc(u.dock_tour) + '</button>' : '') +
+            (liveMarks.length ? '<button class="btn btn--sm d-tour">' + I.eye + esc(u.dock_tour) + '</button>' : '') +
             '<button class="btn btn--sm btn--primary d-done">' + I.check + esc(u.dock_done) + '</button>' +
             '<button class="icon-btn d-min" aria-label="' + esc(u.dock_min_aria) + '">' + I.minus + '</button>' +
             '<button class="icon-btn d-wizard" aria-label="' + esc(u.dock_back) + '" title="' + esc(u.dock_back) + '">' + I.arrowLeft + '</button>' +
@@ -824,7 +1260,7 @@
 
       var runTour = function () {
         setState('driving');
-        Coach.run(marks, self.lang, function (status) {
+        Coach.run(liveMarks, self.lang, function (status) {
           if (!document.body.contains(dock)) return;
           setState(hasPractice ? 'expanded' : 'default');
           if (status === 'no_targets' || status === 'no_driver') {
@@ -867,15 +1303,20 @@
 
       if (opts.navigate && step.ghl_path) {
         navigateTo(step.ghl_path);
-        waitForTargets(marks, 9000).then(function (found) {
-          if (!document.body.contains(dock)) return;
-          if (found && marks.length) runTour();
-          else if (marks.length) {
-            var sub = dock.querySelector('.spark-dock__sub');
-            if (sub) sub.textContent = u.dock_no_targets;
-            setState('expanded');
-          }
-        });
+        if (liveMarks.length) {
+          waitForTargets(liveMarks, 20000).then(function (found) {
+            if (!document.body.contains(dock)) return;
+            if (found) runTour();
+            else {
+              var sub = dock.querySelector('.spark-dock__sub');
+              if (sub) sub.textContent = u.dock_no_targets;
+              setState('expanded');
+            }
+          });
+        } else if (desc || hasPractice) {
+          // instrução-only: abre o detalhe pra a orientação ficar visível sem clique
+          setState('expanded');
+        }
       }
     },
 
@@ -950,6 +1391,7 @@
     _complete: function () {
       this.save({ completed_at: new Date().toISOString() });
       Coach.stop();
+      this._stopLauncher(); // finalizou: some o launcher da topbar + mata o interval (Pedro 2026-06-22)
       if (this._onKey) { document.removeEventListener('keydown', this._onKey); this._onKey = null; }
       if (this.root) { this.root.remove(); this.root = null; } // watchdog checa engine.root — sem null o done screen ressuscita a cada 2.5s
       engine = null;
@@ -968,18 +1410,53 @@
     /* ====================================================
        FAB
        ==================================================== */
+    /* Launcher minimizado: injetado na TOPBAR do GHL (.hl_header--controls), não bottom-right.
+       Pedro 2026-06-22. Padrão do spark-zoom: persistência via routeChangeEvent + interval (SPA re-render). */
     _mountFab: function () {
+      if (this.pendingCount() === 0) { this._removeFab(); return; }
+      this._launcherWant = true;
+      this._injectLauncher();
+      if (!this._launcherTick) {
+        var self = this;
+        this._launcherTick = setInterval(function () { if (self._launcherWant) self._injectLauncher(); }, 1000);
+        this._launcherOnRoute = function () { if (self._launcherWant) setTimeout(function () { self._injectLauncher(); }, 200); };
+        window.addEventListener('routeChangeEvent', this._launcherOnRoute);
+      }
+    },
+    _injectLauncher: function () {
       var self = this, u = this.ui();
-      this._removeFab();
-      if (this.pendingCount() === 0) return;
-      var fab = el('<button class="spark-fab has-pending" aria-label="' + esc(u.fab_aria) + '">' + I.rocket +
-        '<span class="spark-fab__badge">' + this.pendingCount() + '</span></button>');
-      fab.onclick = function () { self.openFullscreen(self.screen === 'done' ? 'done' : 'wizard'); };
-      this.root.appendChild(fab);
-      this._fab = fab;
+      var controls = document.querySelector('.hl_header--controls');
+      var existing = document.getElementById('spark-onb-topbtn');
+      var pend = this.pendingCount();
+      if (!this._launcherWant || pend === 0 || !controls) { if (existing) existing.remove(); return; }
+      if (existing && existing.parentElement === controls) {
+        var b = existing.querySelector('.spark-onb-topbtn__badge'); if (b) b.textContent = pend; return;
+      }
+      if (existing) existing.remove();
+      var btn = el('<button id="spark-onb-topbtn" class="spark-onb-topbtn" title="' + esc(u.fab_aria) + '" aria-label="' + esc(u.fab_aria) + '">' + I.rocket +
+        '<span class="spark-onb-topbtn__badge">' + pend + '</span></button>');
+      btn.onclick = function () {
+        var target = self.screen === 'done' ? 'done' : (!self.actAllDone() ? 'activation' : 'wizard');
+        self.openFullscreen(target);
+      };
+      controls.insertBefore(btn, controls.firstChild);
+      this._fab = btn;
     },
     _removeFab: function () {
-      if (this._fab) { this._fab.remove(); this._fab = null; }
+      // esconde o launcher (ex: onboarding aberto) mas mantém o tick vivo pra reaparecer ao minimizar
+      this._launcherWant = false;
+      var existing = document.getElementById('spark-onb-topbtn');
+      if (existing) existing.remove();
+      this._fab = null;
+    },
+    _stopLauncher: function () {
+      // remove de vez (finalizou / destroy): some o launcher e mata o interval
+      this._launcherWant = false;
+      if (this._launcherTick) { clearInterval(this._launcherTick); this._launcherTick = null; }
+      if (this._launcherOnRoute) { window.removeEventListener('routeChangeEvent', this._launcherOnRoute); this._launcherOnRoute = null; }
+      var existing = document.getElementById('spark-onb-topbtn');
+      if (existing) existing.remove();
+      this._fab = null;
     },
 
     /* ====================================================
@@ -1081,12 +1558,18 @@
         })();
         ws_active = this.steps.filter(function (s) { return s.id === stepId; })[0];
       }
-      if (this.mode === 'dock' && ws_active && !this.completed.has(ws_active.id)) {
+      if (this.mode === 'dock' && ws_active && this._activeResolved && !this.completed.has(ws_active.id)) {
         // user estava no meio de um step no GHL — restaura dock sem navegar
         this._renderDock(ws_active, { navigate: false });
       } else if (!this.everOpened) {
-        // primeira visita: abre welcome automaticamente
-        this.openFullscreen('welcome');
+        // primeira visita: abre a ATIVAÇÃO direto. Sem tela de conceito isolada (Pedro 2026-06-21):
+        // o modelo mental (contato → SparkBot → funil) vai tecido no início do tour (tour-intro).
+        this.openFullscreen('activation');
+      } else if (this.screen === 'activation' && !this.actAllDone()) {
+        // estava na ativação e ainda falta item: reabre o checklist (detecção continua via poll)
+        this.mode = 'fullscreen';
+        this._mountFab();
+        this._pollSignals();
       } else {
         // visitas seguintes: só FAB
         this.mode = 'fullscreen';
@@ -1096,6 +1579,8 @@
 
     destroy: function () {
       Coach.stop();
+      this._stopLauncher();
+      if (this._sigPoll) { clearInterval(this._sigPoll); this._sigPoll = null; }
       if (this._onKey) { document.removeEventListener('keydown', this._onKey); this._onKey = null; }
       if (this.root) { this.root.remove(); this.root = null; }
     },
@@ -1114,6 +1599,51 @@
     document.head.appendChild(css);
   }
 
+  /* Data de criação da sub-conta GHL, lida do Vue store (currentLocation.date_added é um
+     Firestore Timestamp). Pedro 2026-06-23: widget só aparece se a conta tem < 30 dias.
+     Retorna ms ou null se indisponível (store ainda não carregou / conta sem data). */
+  function getAccountCreatedMs() {
+    try {
+      var app = document.getElementById('app');
+      var gp = app && app.__vue_app__ && app.__vue_app__.config.globalProperties;
+      var s = gp && gp.$store && gp.$store.state;
+      var cur = s && s.locations && s.locations.currentLocation;
+      var d = cur && cur.date_added;
+      if (d == null) return null;
+      if (typeof d === 'number') return d > 1e12 ? d : d * 1000;            // ms ou segundos
+      if (typeof d.toMillis === 'function') return d.toMillis();             // Firestore Timestamp
+      if (d.seconds != null) return d.seconds * 1000 + (d.nanoseconds ? Math.floor(d.nanoseconds / 1e6) : 0);
+      if (typeof d.toJSDate === 'function') return d.toJSDate().getTime();   // Luxon
+      var t = new Date(d).getTime();
+      return isNaN(t) ? null : t;
+    } catch (e) { return null; }
+  }
+  var ONB_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
+
+  // Plano SaaS da sub-conta, lido do Vue store do GHL (mesma fonte que o cron usa via API:
+  // settings.saas_settings.stripe_plan_details.price_id). Mapa priceId -> plano. Mantido em
+  // sincronia com o edge function onboarding-provision (PLAN_BY_PRICE). Pedro 2026-06-23.
+  var PLAN_BY_PRICE = {
+    '6a0cbc6f9f3f184b2c6ba66a': 'growth',
+    '6a0cbb5dd9543ee3671cb432': 'starter',
+    '6a0cbce993431a096dbde01e': 'agency',
+  };
+  // Retorna 'starter'|'growth'|'agency' se a conta tem SaaS ATIVO e plano mapeado; senão null
+  // (sem SaaS / Stripe legado / plano novo ainda não mapeado = não auto-provisiona).
+  function getAccountPlan() {
+    try {
+      var app = document.getElementById('app');
+      var gp = app && app.__vue_app__ && app.__vue_app__.config.globalProperties;
+      var s = gp && gp.$store && gp.$store.state;
+      var cur = s && s.locations && s.locations.currentLocation;
+      var ss = cur && cur.settings && cur.settings.saas_settings;
+      if (!ss || ss.saas_mode !== 'activated') return null;
+      var spd = ss.stripe_plan_details;
+      if (!spd || spd.subscription_status !== 'active' || !spd.price_id) return null;
+      return PLAN_BY_PRICE[spd.price_id] || null;
+    } catch (e) { return null; }
+  }
+
   function boot() {
     var locId = getLocationId();
     if (!locId || locId === bootedFor) return;
@@ -1123,9 +1653,31 @@
     Promise.all([loadProgress(locId), loadSteps()]).then(function (res) {
       if (getLocationId() !== locId) return; // user trocou de location durante o fetch
       var progress = res[0], steps = res[1];
-      if (!progress) return;                 // gate: sem row = sem widget
-      if (progress.completed_at) return;     // já concluiu
       if (!steps || !steps.length) return;
+
+      // Regra de visibilidade por idade (Pedro 2026-06-23): conta > 30 dias = esconde.
+      // Data do GHL (live); fallback no account_created_at salvo. Idade desconhecida = não esconde.
+      var createdMs = getAccountCreatedMs();
+      if (createdMs == null && progress && progress.account_created_at) createdMs = new Date(progress.account_created_at).getTime();
+      if (createdMs != null && (Date.now() - createdMs) > ONB_MAX_AGE_MS) return; // > 30 dias
+
+      // Self-provision no 1o login (Pedro 2026-06-23): conta < 30 dias com SaaS ATIVO ganha o
+      // widget NA HORA, sem esperar o cron diário. Plano lido do store do GHL. Idempotente:
+      // UNIQUE(location_id) + o cron é a autoridade que corrige/backfilla depois.
+      if (!progress) {
+        var newPlan = getAccountPlan();
+        if (createdMs == null || newPlan == null) return; // idade desconhecida ou sem plano mapeado = sem widget
+        progress = { location_id: locId, plan: newPlan, lang: 'pt', current_step: 0,
+                     account_created_at: new Date(createdMs).toISOString() };
+        sbInsert(PROGRESS_DB, 'onboarding_progress?on_conflict=location_id', progress); // fire-and-forget
+      }
+      if (progress.completed_at) return;     // já concluiu
+
+      // backfill: guarda a data de criação no row (registro) se ainda não tem
+      if (createdMs != null && !progress.account_created_at) {
+        try { sbPatch(PROGRESS_DB, 'onboarding_progress?location_id=eq.' + encodeURIComponent(locId), { account_created_at: new Date(createdMs).toISOString() }); } catch (e) {}
+      }
+
       injectCss();
       engine = new Engine(locId, progress, steps);
       engine.resume();
