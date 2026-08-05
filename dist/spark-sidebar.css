@@ -9,8 +9,11 @@
   --s-surface: #1a1e27;
   --s-hover: #212733;
   --s-border: rgba(255,255,255,0.06);
-  --s-text-muted: #4b5468;
-  --s-text: #8892a4;
+  /* Contraste medido contra o #13161c (WCAG AA pede 4,5:1):
+     o #4b5468 antigo dava 2,44:1 — reprovava, e era a cor dos submenus e dos
+     rótulos de pasta. #7b8698 dá 5,04:1 e #99a3b4 dá 7,29:1. */
+  --s-text-muted: #7b8698;
+  --s-text: #99a3b4;
   --s-text-bright: #e2e6ed;
   --s-blue: #3b82f6;
   --s-blue-soft: rgba(59,130,246,0.08);
@@ -388,8 +391,10 @@
   transition: background var(--s-t) !important;
   position: relative !important;
   display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+  /* Sem `gap`: o span do ícone já tem `mr-2` (8px), igual aos itens nativos.
+     Com os dois, o rótulo do Templates começava 8px à direita de todos os
+     outros (medido: 55,97px vs 47,97px). */
+  gap: 0 !important;
   cursor: pointer !important;
   text-decoration: none !important;
   opacity: 1 !important;
@@ -443,8 +448,13 @@
 #sb_ai-employee-promo { display: none !important; }
 a[id="sb_AI Agents"] { display: none !important; }
 a#b945dffb-70bb-40be-9219-dbcaafc178d4 { display: none !important; }
-a#425e6d9b-1b91-4fd9-9f4f-ae01f43724ca { display: none !important; } /* Old Templates custom link — replaced by injected one */
-a#6656fbe08a310e28e65540b3 { display: none !important; }
+/* Seletor por ATRIBUTO, não por `#id`: identificador CSS não pode começar com
+   dígito, então `a#425e...` e `a#6656...` eram descartados pelo navegador —
+   as duas regras nunca esconderam nada (medido: 158 regras parseadas de 160
+   no arquivo). O antigo link de Templates só sumia porque o JS o esconde por
+   style inline. */
+a[id="425e6d9b-1b91-4fd9-9f4f-ae01f43724ca"] { display: none !important; } /* Templates antigo — substituído pelo injetado */
+a[id="6656fbe08a310e28e65540b3"] { display: none !important; }
 
 /* ── GHL Divider ── */
 #sidebar-v2 .hl_nav-header nav > .divider { order: 8 !important; margin: 4px 16px !important; padding: 0 !important; opacity: 1 !important; }
@@ -537,10 +547,14 @@ a#6656fbe08a310e28e65540b3 { display: none !important; }
   border-color: var(--s-blue-glow) !important;
 }
 
-/* ── Scrollbar — vertical only ── */
-#sidebar-v2 .hl_nav-header::-webkit-scrollbar { width: 2px !important; }
+/* ── Scrollbar — ver o bloco 1 do v7 no fim do arquivo ──
+   Estas regras miravam o .hl_nav-header (o PAI). Quem rola de verdade é o
+   <nav> FILHO, então elas nunca pegaram e o Chrome desenhava a barra padrão
+   de 14px, clara, em cima do fundo escuro. Mantidas por segurança; a correção
+   que vale está no v7. */
+#sidebar-v2 .hl_nav-header::-webkit-scrollbar { width: 6px !important; }
 #sidebar-v2 .hl_nav-header::-webkit-scrollbar-track { background: transparent !important; }
-#sidebar-v2 .hl_nav-header::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06) !important; border-radius: 2px !important; }
+#sidebar-v2 .hl_nav-header::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06) !important; border-radius: 999px !important; }
 
 /* ── Settings collapsible sections (applied by JS) ── */
 .spark-section-toggle {
@@ -591,4 +605,268 @@ a#6656fbe08a310e28e65540b3 { display: none !important; }
   font-weight: 500 !important;
   line-height: 17px !important;
   white-space: nowrap !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPARK SIDEBAR v7 — refinamento (2026-08-05)
+   Motivo: "deixa ela mais slick, mais bonitinho, sem fundo branco".
+   Tudo aqui foi medido no DOM real de uma location de produção antes
+   de ser escrito — os números nos comentários são medições, não estimativas.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. A BARRA DE ROLAGEM BRANCA ────────────────────────────────────
+   Quem transborda é o <nav> FILHO de .hl_nav-header (medido: 685px de
+   conteúdo em 566px de altura), não o .hl_nav-header. Ironia: é o nosso
+   próprio `overflow-x: hidden` no nav que faz o overflow-y computar como
+   `auto` pela spec — criamos o scroller e estilizamos o elemento errado,
+   então o Chrome desenhava a barra PADRÃO de 14px, clara.
+
+   `color-scheme: dark` é o cinto de segurança: qualquer scroller que
+   apareça e que a gente não tenha previsto nasce escuro (e resolve o
+   Firefox, que ignora ::-webkit-scrollbar).
+
+   Sem `scrollbar-width`: no Chrome ele vence o ::-webkit-scrollbar e a
+   calha vira ~10px. Só com as regras -webkit- a calha fica em 6px
+   (medido: 5px de calha real). */
+/* `color-scheme` HERDA — e o dropdown do switcher de conta e o painel do Quick
+   Actions moram dentro do #sidebar-v2 (é por isso que o overflow tem que ser
+   visible lá em cima). São painéis CLAROS: se o color-scheme dark descesse
+   neles, a barra de rolagem interna deles nasceria escura sobre fundo branco.
+   Verificado que nenhum dos dois está dentro de `.hl_nav-header` — então a
+   rede de segurança fica nos scrollers, e só neles. */
+#sidebar-v2 .hl_nav-header,
+#sidebar-v2 .hl_nav-header > nav,
+#sidebar-v2 .hl_nav-header-without-footer,
+#sidebar-v2 .hl_nav-header-without-footer > nav,
+#sidebar-v2 .hl_nav-settings,
+#sidebar-v2 .hl_nav-settings > nav {
+  color-scheme: dark !important;
+}
+#sidebar-v2 .hl_nav-header > nav,
+#sidebar-v2 .hl_nav-header-without-footer > nav,
+#sidebar-v2 .hl_nav-settings > nav {
+  min-height: 0 !important;              /* deixa o flex item encolher e rolar */
+  overscroll-behavior: contain !important; /* não empurra a rolagem pra página */
+}
+#sidebar-v2 .hl_nav-header > nav::-webkit-scrollbar,
+#sidebar-v2 .hl_nav-header-without-footer > nav::-webkit-scrollbar,
+#sidebar-v2 .hl_nav-settings > nav::-webkit-scrollbar {
+  width: 6px !important;
+  height: 0 !important;                  /* mata a barra horizontal */
+  background: transparent !important;
+}
+#sidebar-v2 .hl_nav-header > nav::-webkit-scrollbar-track,
+#sidebar-v2 .hl_nav-header-without-footer > nav::-webkit-scrollbar-track,
+#sidebar-v2 .hl_nav-settings > nav::-webkit-scrollbar-track {
+  background: transparent !important;
+  border: 0 !important;
+}
+#sidebar-v2 .hl_nav-header > nav::-webkit-scrollbar-thumb,
+#sidebar-v2 .hl_nav-header-without-footer > nav::-webkit-scrollbar-thumb,
+#sidebar-v2 .hl_nav-settings > nav::-webkit-scrollbar-thumb {
+  background-color: transparent !important;   /* invisível em repouso */
+  border-radius: 999px !important;
+  transition: background-color 0.2s ease !important;
+}
+/* Só acende com o mouse na barra — ou com foco de teclado dentro dela. */
+#sidebar-v2:hover .hl_nav-header > nav::-webkit-scrollbar-thumb,
+#sidebar-v2:focus-within .hl_nav-header > nav::-webkit-scrollbar-thumb,
+#sidebar-v2:hover .hl_nav-header-without-footer > nav::-webkit-scrollbar-thumb,
+#sidebar-v2:focus-within .hl_nav-header-without-footer > nav::-webkit-scrollbar-thumb,
+#sidebar-v2:hover .hl_nav-settings > nav::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.14) !important;
+}
+#sidebar-v2 .hl_nav-header > nav::-webkit-scrollbar-button,
+#sidebar-v2 .hl_nav-header > nav::-webkit-scrollbar-corner {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Fade no topo e na base: o menu se dissolve em vez de ser cortado a faca.
+   Duas coisas foram medidas antes de deixar isto entrar:
+   · os tooltips do GHL (barra colapsada) são renderizados como filhos do
+     <body>, não dentro do <a> — a máscara não os corta;
+   · a máscara vai no PAI, não no <nav> que rola. No <nav>, o Chrome mascara
+     também a barra de rolagem DELE: o polegar simplesmente sumia (testado
+     lado a lado com o polegar em branco opaco). No pai, o fade pega o
+     conteúdo e a barra continua visível. */
+#sidebar-v2 .hl_nav-header,
+#sidebar-v2 .hl_nav-header-without-footer {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 calc(100% - 16px), transparent 100%) !important;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 calc(100% - 16px), transparent 100%) !important;
+}
+
+/* ── 2. MATERIAL — a barra deixa de ser uma chapa preta ──────────────
+   Gradiente vertical quase imperceptível + fio na borda direita. Os
+   wrappers internos ficam transparentes pro gradiente atravessar; o
+   `background-color` do #sidebar-v2 segue sendo a rede se algum deles
+   não for pintado. */
+/* A especificidade tem que empatar com quem já pinta este elemento lá em cima,
+   e quem pinta é `#sidebar-v2.default-bg-color` — id + classe no MESMO
+   elemento (0,1,2,0) com `background` (atalho zera o background-image).
+   Só `#sidebar-v2` perde e o gradiente some sem avisar: foi o que aconteceu
+   nos dois primeiros testes, e por isso vale medir em vez de supor. */
+.sidebar-v2-location #sidebar-v2.default-bg-color,
+.sidebar-v2-agency #sidebar-v2.default-bg-color,
+.v2-open #sidebar-v2,
+#sidebar-v2 {
+  background-image: linear-gradient(180deg, #181c25 0%, var(--s-bg) 38%, var(--s-bg) 74%, #0e1116 100%) !important;
+  background-repeat: no-repeat !important;
+  background-size: 100% 100% !important;
+  /* inset à direita: `overflow: visible` é obrigatório aqui (dropdown do
+     switcher de conta), então nada de border que empurre layout. */
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.055),
+              10px 0 28px -18px rgba(0,0,0,0.75) !important;
+}
+.sidebar-v2-location #sidebar-v2 .default-bg-color,
+.sidebar-v2-agency #sidebar-v2 .default-bg-color,
+#sidebar-v2 > .relative,
+#sidebar-v2 .lead-connector,
+#sidebar-v2 .hl_nav-header,
+#sidebar-v2 .hl_nav-header > nav,
+#sidebar-v2 .hl_nav-header-without-footer,
+#sidebar-v2 .hl_nav-header-without-footer > nav,
+#sidebar-v2 .hl_nav-settings > nav {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+#sidebar-v2 .hl_nav-settings {
+  border-top: 1px solid rgba(255,255,255,0.055) !important;
+  background-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.22) 100%) !important;
+}
+
+/* ── 3. ÍCONES — um tratamento só pros TRÊS tipos ────────────────────
+   img (nativo), i.fas (custom links) e span.ask-ai-sparkle-icon
+   ("Pergunte à IA"). O terceiro nunca tinha sido tratado: ficava branco
+   e colorido no meio de uma fila de cinzas. */
+#sidebar-v2 .hl_nav-header a img,
+#sidebar-v2 .hl_nav-settings a img,
+#sidebar-v2 a.custom-link i,
+#sidebar-v2 a#spark-templates i {
+  opacity: 0.42 !important;
+}
+#sidebar-v2 #sb_ask-ai .ask-ai-sparkle-icon {
+  opacity: 0.42 !important;
+  filter: grayscale(1) !important;
+  transition: opacity var(--s-t), filter var(--s-t) !important;
+}
+#sidebar-v2 #sb_ask-ai:hover .ask-ai-sparkle-icon {
+  opacity: 0.95 !important;
+  filter: none !important;              /* no hover ele volta a ser ele */
+}
+/* Colapsada o ícone é a ÚNICA informação — aí ele não pode estar apagado. */
+#sidebar-v2:not(.w-56) .hl_nav-header a img,
+#sidebar-v2:not(.w-56) .hl_nav-settings a img,
+#sidebar-v2:not(.w-56) a.custom-link i,
+#sidebar-v2:not(.w-56) a#spark-templates i,
+#sidebar-v2:not(.w-56) #sb_ask-ai .ask-ai-sparkle-icon {
+  opacity: 0.62 !important;
+}
+
+/* ── 4. ITEM — pílula descolada da borda ─────────────────────────────
+   `.spark-folder-body > a` entra na lista: os 8 itens de "Outras ferramentas"
+   são NETOS do nav (o JS os move pra dentro da pasta), então o combinador
+   `nav > a` nunca os alcançou — eles ficavam com margem 0 enquanto o resto
+   tinha 4px. Medido: `0px` contra `0px 4px`. */
+#sidebar-v2 .hl_nav-header nav > a,
+#sidebar-v2 .hl_nav-header nav .spark-folder-body > a,
+#sidebar-v2 .hl_nav-settings nav > a,
+#sidebar-v2 a#spark-templates {
+  margin: 0 6px !important;
+  border-radius: 9px !important;
+}
+
+/* Hover: véu branco de 4,5% em vez do bloco chapado #212733 — mesma
+   leitura, metade do peso, e funciona sobre qualquer fundo. */
+#sidebar-v2 .hl_nav-header a:hover,
+#sidebar-v2 .hl_nav-settings a:hover,
+#sidebar-v2 a#spark-templates:hover {
+  background: rgba(255,255,255,0.045) !important;
+}
+
+/* ── 5. ATIVO — a luz vem da esquerda e morre no meio do item ────────
+   Sai o retângulo azul de largura cheia com a barra colada na borda;
+   entra um degradê que se dissolve pra direita, anel interno de 1px e
+   um traço arredondado DENTRO da pílula. */
+#sidebar-v2 .hl_nav-header a.active,
+#sidebar-v2 .hl_nav-header a.exact-active,
+#sidebar-v2 a#spark-templates.spark-active {
+  background: linear-gradient(90deg,
+    rgba(59,130,246,0.15) 0%,
+    rgba(59,130,246,0.05) 58%,
+    rgba(59,130,246,0.015) 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(59,130,246,0.10) !important;
+}
+#sidebar-v2 .hl_nav-header a.active::before,
+#sidebar-v2 .hl_nav-header a.exact-active::before,
+#sidebar-v2 a#spark-templates.spark-active::before {
+  left: 0 !important;
+  top: 10px !important;
+  bottom: 10px !important;
+  width: 3px !important;
+  border-radius: 0 3px 3px 0 !important;
+  box-shadow: 0 0 10px rgba(59,130,246,0.35) !important;
+}
+
+/* ── 6. DIVISOR E CAMPOS DO TOPO ─────────────────────────────────────*/
+#sidebar-v2 .hl_nav-header nav > .divider {
+  margin: 9px 18px !important;
+}
+#sidebar-v2 .hl_nav-header nav > .divider p {
+  border-color: rgba(255,255,255,0.055) !important;
+}
+#location-switcher-sidbar-v2,
+#globalSearchOpener,
+#quickActions {
+  border-color: rgba(255,255,255,0.055) !important;
+  background: rgba(255,255,255,0.028) !important;
+}
+#location-switcher-sidbar-v2:hover,
+#globalSearchOpener:hover,
+#quickActions:hover {
+  background: rgba(255,255,255,0.06) !important;
+}
+
+/* ── 7. TELA DE CONFIGURAÇÕES — mesma linguagem do menu ──────────────
+   O container lá é `.hl_nav-header-without-footer` (não `.hl_nav-header`),
+   então nada do desenho acima chegava nele: os itens ficavam colados nas
+   bordas, com canto de 6px e um bloco chapado no ativo. Verificado que só
+   UM item recebe `.active` ali — não há risco de duas pílulas acesas. */
+#sidebar-v2 .hl_nav-header-without-footer nav > a {
+  position: relative !important;
+  margin: 0 6px !important;
+  border-radius: 9px !important;
+  padding: 8px 12px !important;
+  transition: background var(--s-t), color var(--s-t) !important;
+}
+#sidebar-v2 .hl_nav-header-without-footer nav > a,
+#sidebar-v2 .hl_nav-header-without-footer nav > a .nav-title {
+  color: var(--s-text) !important;
+}
+#sidebar-v2 .hl_nav-header-without-footer nav > a:hover {
+  background: rgba(255,255,255,0.045) !important;
+  color: var(--s-text-bright) !important;
+}
+#sidebar-v2 .hl_nav-header-without-footer nav > a.active,
+#sidebar-v2 .hl_nav-header-without-footer nav > a.exact-active {
+  background: linear-gradient(90deg,
+    rgba(59,130,246,0.15) 0%,
+    rgba(59,130,246,0.05) 58%,
+    rgba(59,130,246,0.015) 100%) !important;
+  color: var(--s-text-bright) !important;
+  font-weight: 600 !important;
+  box-shadow: inset 0 0 0 1px rgba(59,130,246,0.10) !important;
+}
+#sidebar-v2 .hl_nav-header-without-footer nav > a.active::before,
+#sidebar-v2 .hl_nav-header-without-footer nav > a.exact-active::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 8px !important;
+  bottom: 8px !important;
+  width: 3px !important;
+  border-radius: 0 3px 3px 0 !important;
+  background: var(--s-blue) !important;
+  box-shadow: 0 0 10px rgba(59,130,246,0.35) !important;
 }

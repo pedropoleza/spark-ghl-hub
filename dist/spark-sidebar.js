@@ -187,39 +187,41 @@
     'sb_app-marketplace', 'sb_location-mobile-app'
   ];
 
+  /* Rótulos em português do Brasil: o resto do menu é PT-BR (o cliente vê
+     "Calendários", "Contatos", "Leads") e só os submenus abriam em inglês. */
   var SUB_ITEMS = {
     'sb_opportunities': [
-      { label: 'Pipeline', path: '/opportunities/pipeline' },
-      { label: 'List View', path: '/opportunities/list' },
+      { label: 'Funil', path: '/opportunities/pipeline' },
+      { label: 'Lista', path: '/opportunities/list' },
     ],
     'sb_contacts': [
-      { label: 'Smart Lists', path: '/contacts/smart_list/All' },
-      { label: 'Bulk Actions', path: '/contacts/bulk/actions' },
+      { label: 'Listas inteligentes', path: '/contacts/smart_list/All' },
+      { label: 'Ações em massa', path: '/contacts/bulk/actions' },
     ],
     'sb_calendars': [
-      { label: 'Calendar View', path: '/calendars/view' },
-      { label: 'Appointments', path: '/calendars/appointments' },
-      { label: 'Settings', path: '/settings/calendars' },
+      { label: 'Calendário', path: '/calendars/view' },
+      { label: 'Agendamentos', path: '/calendars/appointments' },
+      { label: 'Configurações', path: '/settings/calendars' },
     ],
     'sb_email-marketing': [
-      { label: 'Social Planner', path: '/marketing/social-planner' },
-      { label: 'Email Marketing', path: '/marketing/emails' },
+      { label: 'Planejador social', path: '/marketing/social-planner' },
+      { label: 'E-mail marketing', path: '/marketing/emails' },
     ],
     'sb_payments': [
-      { label: 'Invoices', path: '/payments/invoices' },
-      { label: 'Products', path: '/payments/products' },
-      { label: 'Orders', path: '/payments/orders' },
+      { label: 'Faturas', path: '/payments/invoices' },
+      { label: 'Produtos', path: '/payments/products' },
+      { label: 'Pedidos', path: '/payments/orders' },
     ],
     'sb_sites': [
-      { label: 'Funnels', path: '/funnels-websites/funnels' },
-      { label: 'Websites', path: '/funnels-websites/websites' },
+      { label: 'Funis', path: '/funnels-websites/funnels' },
+      { label: 'Sites', path: '/funnels-websites/websites' },
     ],
     'sb_automation': [
-      { label: 'Workflows', path: '/automation/workflows' },
+      { label: 'Fluxos de trabalho', path: '/automation/workflows' },
     ],
     'sb_reporting': [
-      { label: 'Reports', path: '/reporting/reports' },
-      { label: 'Attribution', path: '/reporting/attribution' },
+      { label: 'Relatórios', path: '/reporting/reports' },
+      { label: 'Atribuição', path: '/reporting/attribution' },
     ],
   };
 
@@ -423,7 +425,7 @@
     toggle.className = 'spark-folder-toggle';
     toggle.setAttribute('data-spark', '1');
     toggle.style.order = '20';
-    toggle.innerHTML = '<svg class="spark-folder-chevron' + (folderOpen ? ' open' : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg><span class="spark-folder-label">Other Tools</span>';
+    toggle.innerHTML = '<svg class="spark-folder-chevron' + (folderOpen ? ' open' : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg><span class="spark-folder-label">Outras ferramentas</span>';
 
     var body = document.createElement('div');
     body.className = 'spark-folder-body' + (folderOpen ? '' : ' collapsed');
