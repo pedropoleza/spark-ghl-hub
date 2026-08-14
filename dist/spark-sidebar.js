@@ -180,7 +180,10 @@
          `(.+)` é guloso: o grupo 2 fica sempre com o ÚLTIMO trecho, mesmo se o
          alvo tiver hífen. */
       var WA_EDIT_RX = /^wa-edit-(.+)-([^-]+)$/;
-      var WA_MARCA = ' ✏️ editada';
+      /* Quebra de linha, não espaço: assim o selo já cai EMBAIXO da mensagem
+         mesmo que a camada visual abaixo não rode. É a rede — o corpo é o que
+         sobrevive a qualquer re-render do GHL. */
+      var WA_MARCA = '\n✏️ editada';
 
       /* Acha as listas de mensagens onde quer que estejam. Fixar
          `data.messages.messages` foi o segundo palpite que não colou: essa é a
@@ -348,6 +351,61 @@
         } catch (e) { /* qualquer tropeço → resposta crua, sem quebrar a tela */ }
         return wa_XHRsend.apply(this, arguments);
       };
+
+      /* ── o selo em miúdo, no canto ──
+         Sem seletor do GHL: o alvo é achado pelo PRÓPRIO texto do selo, então
+         não quebra quando eles trocarem as classes.
+
+         🔴 Nada de inserir nó aqui. Estes bloco vive dentro do React do GHL, e
+         nó estranho no meio da árvore dele estoura a reconciliação (removeChild
+         de nó que ele não conhece). Por isso o selo sai do texto e volta como
+         ::after, que é pintura, não DOM. */
+      var waSeloPassa = function () {
+        if (!document.body || !document.createTreeWalker) return;
+        var it = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+        var achados = [];
+        var n;
+        while ((n = it.nextNode())) {
+          var v = n.nodeValue;
+          if (v && v.length > WA_MARCA.length && v.slice(-WA_MARCA.length) === WA_MARCA) achados.push(n);
+        }
+        for (var i = 0; i < achados.length; i++) {
+          var no = achados[i];
+          var pai = no.parentNode;
+          if (!pai || pai.nodeType !== 1) continue;
+          no.nodeValue = no.nodeValue.slice(0, -WA_MARCA.length);
+          pai.setAttribute('data-spark-editada', '1');
+        }
+      };
+
+      /* exposto pro teste (e pra reaplicar na mão no console, se precisar) */
+      try { window.__SPARK_WA_SELO = waSeloPassa; } catch (e) {}
+
+      /* O GHL re-renderiza e traz o selo de volta pro texto; a gente reaplica.
+         Debounce porque a nossa própria escrita acorda o observer — na volta ele
+         não acha mais nada e a coisa assenta sozinha. */
+      var waSeloTimer = null;
+      var waSeloAgenda = function () {
+        if (waSeloTimer) return;
+        waSeloTimer = setTimeout(function () {
+          waSeloTimer = null;
+          try { waSeloPassa(); } catch (e) {}
+        }, 120);
+      };
+      var waSeloLiga = function () {
+        try {
+          if (!document.body) return;
+          new MutationObserver(waSeloAgenda).observe(document.body, {
+            childList: true, subtree: true, characterData: true
+          });
+          waSeloAgenda();
+        } catch (e) { /* sem observer → o selo fica no texto, embaixo. Vive. */ }
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waSeloLiga);
+      } else {
+        waSeloLiga();
+      }
     }
   } catch (e) {
     console.warn('[SPARK-WA-EDIT] init falhou:', e);

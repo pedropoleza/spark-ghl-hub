@@ -870,3 +870,24 @@ a[id="6656fbe08a310e28e65540b3"] { display: none !important; }
   background: var(--s-blue) !important;
   box-shadow: 0 0 10px rgba(59,130,246,0.35) !important;
 }
+
+/* ── WhatsApp · selo "editada" ──────────────────────────────────────────────
+   O JS tira o selo do texto da bolha e marca o elemento com
+   [data-spark-editada]. Aqui ele volta como ::after — pseudo-elemento não é nó,
+   então o React do GHL re-renderiza sem estourar reconciliação.
+   Se o JS não rodar, o selo fica no corpo mesmo, em linha própria: feio, mas
+   nunca some em silêncio. */
+[data-spark-editada]::after {
+  content: '✏️ editada';
+  display: block;
+  margin-top: 1px;
+  text-align: right;
+  font-size: 10px;
+  line-height: 1.3;
+  font-style: italic;
+  opacity: 0.5;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}

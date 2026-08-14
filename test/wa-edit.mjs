@@ -25,6 +25,7 @@ const janela = {
   location: { pathname: "/", href: "https://app.sparkleads.pro/" },
   addEventListener: noop, setInterval: noop, setTimeout: noop, console,
   MutationObserver: class { observe() {} disconnect() {} },
+  NodeFilter: { SHOW_TEXT: 4 },
   document: {
     currentScript: { src: "https://x/spark-sidebar.js" },
     getElementsByTagName: () => [], querySelector: () => null, querySelectorAll: () => [],
@@ -79,7 +80,7 @@ console.log("\n1) caso do Pedro: mensagem do GHL (sem altId) editada no WhatsApp
   const d = await via(payload([NOTA("6R4XzWzw9kr4kX1ZmaU5", 1786680633590, "teste 2"), orig]));
   const l = d.messages.messages;
   ok("sobra uma bolha só", l.length === 1, l.length);
-  ok("texto novo na original", l[0] && l[0].body === "teste 2 ✏️ editada", l[0] && l[0].body);
+  ok("texto novo na original", l[0] && l[0].body === "teste 2\n✏️ editada", l[0] && l[0].body);
   ok("id preservado", l[0] && l[0].id === "6R4XzWzw9kr4kX1ZmaU5");
 }
 
@@ -88,7 +89,7 @@ console.log("\n2) mensagem espelhada do WhatsApp (casa por altId)");
   const orig = { id: "ghl-1", altId: "3A77A3EE", direction: "inbound", body: "amor" };
   const d = await via(payload([NOTA("3A77A3EE", 111, "amor mesmo"), orig]));
   const l = d.messages.messages;
-  ok("dobrou", l.length === 1 && l[0].body === "amor mesmo ✏️ editada", l.map((m) => m.body));
+  ok("dobrou", l.length === 1 && l[0].body === "amor mesmo\n✏️ editada", l.map((m) => m.body));
 }
 
 console.log("\n3) editada DUAS vezes — vale a última, e os dois bilhetes somem");
@@ -97,7 +98,7 @@ console.log("\n3) editada DUAS vezes — vale a última, e os dois bilhetes some
   const d = await via(payload([NOTA("m1", 200, "v3"), NOTA("m1", 100, "v2"), orig]));
   const l = d.messages.messages;
   ok("sobra uma", l.length === 1, l.length);
-  ok("venceu a mais nova", l[0].body === "v3 ✏️ editada", l[0].body);
+  ok("venceu a mais nova", l[0].body === "v3\n✏️ editada", l[0].body);
 }
 
 console.log("\n4) original fora da página — o bilhete FICA (nada some em silêncio)");
@@ -130,7 +131,7 @@ console.log("\n7) XHR: responseText sai dobrado");
   x.send();
   x.__raw = JSON.stringify(payload([NOTA("m9", 1, "editado"), { id: "m9", altId: null, body: "cru", direction: "outbound" }]));
   const saida = JSON.parse(x.responseText);
-  ok("dobrou no XHR", saida.messages.messages.length === 1 && saida.messages.messages[0].body === "editado ✏️ editada", saida.messages.messages.map((m) => m.body));
+  ok("dobrou no XHR", saida.messages.messages.length === 1 && saida.messages.messages[0].body === "editado\n✏️ editada", saida.messages.messages.map((m) => m.body));
 }
 
 console.log("\n8) XHR responseType json: objeto mutado no lugar, e idempotente");
@@ -142,7 +143,7 @@ console.log("\n8) XHR responseType json: objeto mutado no lugar, e idempotente")
   const a = x.response;
   const primeiro = JSON.stringify(a.messages.messages);
   const b = x.response;
-  ok("dobrou", a.messages.messages.length === 1 && a.messages.messages[0].body === "novo ✏️ editada", a.messages.messages.map((m) => m.body));
+  ok("dobrou", a.messages.messages.length === 1 && a.messages.messages[0].body === "novo\n✏️ editada", a.messages.messages.map((m) => m.body));
   ok("ler de novo não muda nada", JSON.stringify(b.messages.messages) === primeiro, b.messages.messages.map((m) => m.body));
 }
 
@@ -158,7 +159,7 @@ console.log("\n10) contato editou no celular — sufixo é stanzaId, não carimb
   const orig = { id: "ghl-9", altId: "3A77A3EE", direction: "inbound", body: "amor" };
   const l = (await via(payload([nota, orig]))).messages.messages;
   ok("dobrou", l.length === 1, l.length);
-  ok("texto novo na original", l[0] && l[0].body === "amor mesmo ✏️ editada", l[0] && l[0].body);
+  ok("texto novo na original", l[0] && l[0].body === "amor mesmo\n✏️ editada", l[0] && l[0].body);
 }
 
 console.log("\n11) contato editou DUAS vezes — desempata pela data da bolha");
@@ -175,7 +176,7 @@ console.log("\n11) contato editou DUAS vezes — desempata pela data da bolha");
     orig,
   ]))).messages.messages;
   ok("sobra uma", l.length === 1, l.length);
-  ok("venceu a mais nova", l[0] && l[0].body === "v3 ✏️ editada", l[0] && l[0].body);
+  ok("venceu a mais nova", l[0] && l[0].body === "v3\n✏️ editada", l[0] && l[0].body);
 }
 
 /* Os dois palpites que reprovaram na tela do Pedro: a FORMA DA URL e a FORMA DO
@@ -191,7 +192,7 @@ console.log("\n12) URL do app real (/conversations/messages, sem id no meio)");
   const orig = { id: "m12", altId: null, direction: "outbound", body: "teste" };
   const corpo = payload([NOTA("m12", 1786680633590, "teste 2"), orig]);
   const l = (await viaUrl("https://services.leadconnectorhq.com/conversations/messages?conversationId=abc&limit=20", corpo)).messages.messages;
-  ok("dobrou na URL do app", l.length === 1 && l[0].body === "teste 2 ✏️ editada", l.map((m) => m.body));
+  ok("dobrou na URL do app", l.length === 1 && l[0].body === "teste 2\n✏️ editada", l.map((m) => m.body));
 }
 
 console.log("\n13) payload embrulhado de outro jeito — acha a lista pelo conteúdo");
@@ -201,7 +202,39 @@ console.log("\n13) payload embrulhado de outro jeito — acha a lista pelo conte
   const corpo = { data: { thread: { items: [NOTA("m13", 1786680633590, "v2"), orig] } } };
   const d = await viaUrl("https://x/conversations/messages", corpo);
   const l = d.data.thread.items;
-  ok("dobrou fora da forma conhecida", l.length === 1 && l[0].body === "v2 ✏️ editada", l.map((m) => m.body));
+  ok("dobrou fora da forma conhecida", l.length === 1 && l[0].body === "v2\n✏️ editada", l.map((m) => m.body));
+}
+
+/* O selo em miúdo roda DENTRO do React do GHL. Nó inserido no meio da árvore
+   dele estoura a reconciliação, então a regra é: mexe no texto, marca o
+   elemento, e NUNCA cria nó. É isto que este caso tranca. */
+console.log("\n14) selo vira ::after — texto limpo, atributo posto, nenhum nó criado");
+{
+  let inseriu = false;
+  const pai = (nome) => ({
+    nodeType: 1, __nome: nome, attrs: {},
+    setAttribute(k, v) { this.attrs[k] = v; },
+    appendChild() { inseriu = true; }, insertBefore() { inseriu = true; },
+    replaceChild() { inseriu = true; }, removeChild() { inseriu = true; },
+  });
+  const texto = (v, p) => ({ nodeType: 3, nodeValue: v, parentNode: p });
+
+  const bolha = pai("bolha");
+  const outra = pai("outra");
+  const nos = [texto("teste 2\n✏️ editada", bolha), texto("mensagem comum", outra)];
+
+  janela.document.body = pai("body");
+  janela.document.createTreeWalker = () => {
+    let i = 0;
+    return { nextNode: () => (i < nos.length ? nos[i++] : null) };
+  };
+
+  ctx.window.__SPARK_WA_SELO();
+
+  ok("selo saiu do texto", nos[0].nodeValue === "teste 2", nos[0].nodeValue);
+  ok("elemento marcado", bolha.attrs["data-spark-editada"] === "1", bolha.attrs);
+  ok("🔴 nenhum nó criado (React intacto)", inseriu === false);
+  ok("bolha sem selo não é tocada", nos[1].nodeValue === "mensagem comum" && !outra.attrs["data-spark-editada"]);
 }
 
 console.log("\n9) URL que não é de mensagens passa reto");
