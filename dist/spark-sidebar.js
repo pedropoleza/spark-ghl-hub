@@ -163,7 +163,15 @@
      Ver o comportamento cru:  localStorage.setItem('SPARK_WA_EDIT_RAW','1') */
   try {
     if (localStorage.getItem('SPARK_WA_EDIT_RAW') !== '1') {
-      var WA_MSGS_RX = /\/conversations\/[^/]+\/messages/;
+      /* 🔴 NÃO estreite isto de novo. A primeira versão exigia
+         "/conversations/<id>/messages" — a forma do API PÚBLICO. O app do GHL
+         não chama assim (o bloco do 5MB, que funciona, casa
+         "/conversations/messages"), então o dobramento simplesmente nunca
+         rodava: a tela seguia com a bolha velha + o bilhete.
+         Quem filtra de verdade é o corpo — `indexOf('wa-edit-')` antes de
+         qualquer parse. A URL é só uma peneira grossa pra não olhar o mundo. */
+      var WA_MSGS_RX = /message/i;
+      var WA_DEBUG = localStorage.getItem('SPARK_WA_EDIT_DEBUG') === '1';
       /* Dois sufixos convivem, de propósito:
            nós editamos  → "wa-edit-<alvo>-<Date.now()>"   (edições repetidas)
            o contato edita → "wa-edit-<alvo>-<stanzaId>"   (id do WhatsApp, hex)
@@ -174,12 +182,48 @@
       var WA_EDIT_RX = /^wa-edit-(.+)-([^-]+)$/;
       var WA_MARCA = ' ✏️ editada';
 
+      /* Acha as listas de mensagens onde quer que estejam. Fixar
+         `data.messages.messages` foi o segundo palpite que não colou: essa é a
+         forma do API público, e o app embrulha do jeito dele. Aqui a lista é
+         reconhecida pelo CONTEÚDO — array cujos itens têm `body` e `id`/`altId`. */
+      var waEditListas = function (no, prof, saida) {
+        if (!no || typeof no !== 'object' || prof > 4) return saida;
+        if (Array.isArray(no)) {
+          for (var i = 0; i < no.length; i++) {
+            var it = no[i];
+            if (it && typeof it === 'object' && typeof it.body === 'string' &&
+                (typeof it.id === 'string' || typeof it.altId === 'string')) {
+              saida.push(no);
+              return saida;
+            }
+          }
+          for (var j = 0; j < no.length && j < 50; j++) waEditListas(no[j], prof + 1, saida);
+          return saida;
+        }
+        var ks = Object.keys(no);
+        for (var k = 0; k < ks.length; k++) waEditListas(no[ks[k]], prof + 1, saida);
+        return saida;
+      };
+
       /* Dobra as edições no payload da conversa. Devolve true se mexeu.
          Idempotente: rodar de novo no mesmo objeto não muda nada. */
       var waEditAplica = function (data) {
-        var lista = (data && data.messages && Array.isArray(data.messages.messages))
-          ? data.messages.messages
-          : (Array.isArray(data && data.messages) ? data.messages : null);
+        var listas = waEditListas(data, 0, []);
+        var mexeu = false;
+        for (var n = 0; n < listas.length; n++) {
+          if (waEditDobra(listas[n])) mexeu = true;
+        }
+        if (WA_DEBUG) {
+          console.log('[SPARK-WA-EDIT] listas:', listas.length,
+            '| tamanhos:', listas.map(function (l) { return l.length; }).join(','),
+            '| dobrou:', mexeu);
+        }
+        return mexeu;
+      };
+
+      /* Dobra UMA lista, no lugar (splice) — assim não precisamos saber onde ela
+         mora dentro do payload. */
+      var waEditDobra = function (lista) {
         if (!lista || !lista.length) return false;
 
         /* 1) junta os bilhetes por alvo; o carimbo mais novo vence (a mesma
@@ -229,12 +273,15 @@
             break;
           }
         }
-        if (!mexeu) return false;
+        if (!mexeu) {
+          if (WA_DEBUG) console.log('[SPARK-WA-EDIT] bilhete sem alvo nesta lista:', alvos.join(','));
+          return false;
+        }
 
-        var limpa = lista.filter(function (m) { return !(m && sumir[m.id]); });
-        if (limpa.length !== lista.length) {
-          if (data.messages && Array.isArray(data.messages.messages)) data.messages.messages = limpa;
-          else data.messages = limpa;
+        /* remove os bilhetes NO LUGAR — de trás pra frente, pra não bagunçar o
+           índice enquanto anda */
+        for (var d = lista.length - 1; d >= 0; d--) {
+          if (lista[d] && sumir[lista[d].id]) lista.splice(d, 1);
         }
         return true;
       };
@@ -288,7 +335,12 @@
               get: function () {
                 var bruto = dResp.get.call(this);
                 if (typeof bruto === 'string') return waEditTexto(bruto);
-                if (bruto && typeof bruto === 'object') { try { waEditAplica(bruto); } catch (e) {} }
+                /* só objeto/array simples — Blob e ArrayBuffer passam batido.
+                   toString em vez de instanceof: o payload pode vir de outro realm. */
+                var tipo = Object.prototype.toString.call(bruto);
+                if (tipo === '[object Object]' || tipo === '[object Array]') {
+                  try { waEditAplica(bruto); } catch (e) {}
+                }
                 return bruto;
               }
             });

@@ -178,6 +178,32 @@ console.log("\n11) contato editou DUAS vezes — desempata pela data da bolha");
   ok("venceu a mais nova", l[0] && l[0].body === "v3 ✏️ editada", l[0] && l[0].body);
 }
 
+/* Os dois palpites que reprovaram na tela do Pedro: a FORMA DA URL e a FORMA DO
+   PAYLOAD, ambas copiadas do API público. O app do GHL não usa nenhuma das duas.
+   Estes dois casos existem pra não estreitar de novo. */
+async function viaUrl(url, body) {
+  janela.__orig = async () => new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+  return JSON.parse(await (await ctx.fetch(url)).text());
+}
+
+console.log("\n12) URL do app real (/conversations/messages, sem id no meio)");
+{
+  const orig = { id: "m12", altId: null, direction: "outbound", body: "teste" };
+  const corpo = payload([NOTA("m12", 1786680633590, "teste 2"), orig]);
+  const l = (await viaUrl("https://services.leadconnectorhq.com/conversations/messages?conversationId=abc&limit=20", corpo)).messages.messages;
+  ok("dobrou na URL do app", l.length === 1 && l[0].body === "teste 2 ✏️ editada", l.map((m) => m.body));
+}
+
+console.log("\n13) payload embrulhado de outro jeito — acha a lista pelo conteúdo");
+{
+  const orig = { id: "m13", altId: null, direction: "outbound", body: "v1" };
+  /* nem `messages.messages`, nem `messages`: fundo de um embrulho qualquer */
+  const corpo = { data: { thread: { items: [NOTA("m13", 1786680633590, "v2"), orig] } } };
+  const d = await viaUrl("https://x/conversations/messages", corpo);
+  const l = d.data.thread.items;
+  ok("dobrou fora da forma conhecida", l.length === 1 && l[0].body === "v2 ✏️ editada", l.map((m) => m.body));
+}
+
 console.log("\n9) URL que não é de mensagens passa reto");
 {
   janela.__orig = async () => new Response(JSON.stringify({ wa: "wa-edit-nada" }), { status: 200 });
