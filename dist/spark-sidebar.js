@@ -146,6 +146,149 @@
     console.warn('[SPARK-5MB-FIX] init failed:', e);
   }
 
+  /* ── WhatsApp · edição aplicada NA PRÓPRIA bolha (ligado por padrão) ──
+     A API de Conversations do GHL não reescreve o corpo de uma mensagem (só
+     status e anexos — conferido na doc). Por isso o servidor registra a edição
+     como uma mensagem NOVA, com altId = "wa-edit-<idDoAlvo>-<carimbo>".
+     Sem tratamento a conversa fica com duas bolhas e o texto velho continua
+     valendo na original — foi o que apareceu no teste de 14/08.
+
+     Aqui, na LEITURA da conversa, as duas viram uma: o texto novo entra na
+     mensagem original (com marca de editada) e o bilhete some da thread.
+
+     🔴 O bilhete só some quando o alvo é ACHADO. Se a original ficou fora da
+     página carregada, ele fica visível de propósito — perder a edição em
+     silêncio é pior que a bolha extra.
+
+     Ver o comportamento cru:  localStorage.setItem('SPARK_WA_EDIT_RAW','1') */
+  try {
+    if (localStorage.getItem('SPARK_WA_EDIT_RAW') !== '1') {
+      var WA_MSGS_RX = /\/conversations\/[^/]+\/messages/;
+      var WA_EDIT_RX = /^wa-edit-(.+)-(\d+)$/;
+      var WA_MARCA = ' ✏️ editada';
+
+      /* Dobra as edições no payload da conversa. Devolve true se mexeu.
+         Idempotente: rodar de novo no mesmo objeto não muda nada. */
+      var waEditAplica = function (data) {
+        var lista = (data && data.messages && Array.isArray(data.messages.messages))
+          ? data.messages.messages
+          : (Array.isArray(data && data.messages) ? data.messages : null);
+        if (!lista || !lista.length) return false;
+
+        /* 1) junta os bilhetes por alvo; o carimbo mais novo vence (a mesma
+              mensagem pode ser editada várias vezes) */
+        var porAlvo = {};
+        for (var i = 0; i < lista.length; i++) {
+          var m = lista[i];
+          if (!m || typeof m.altId !== 'string' || typeof m.body !== 'string') continue;
+          var casou = WA_EDIT_RX.exec(m.altId);
+          if (!casou) continue;
+          /* o texto que passou a valer é tudo depois da primeira linha — não
+             dependemos da frase do cabeçalho, que pode mudar no servidor */
+          var quebra = m.body.indexOf('\n');
+          if (quebra < 0) continue;
+          var alvo = casou[1];
+          var carimbo = Number(casou[2]) || 0;
+          if (!porAlvo[alvo] || carimbo >= porAlvo[alvo].carimbo) {
+            porAlvo[alvo] = { carimbo: carimbo, texto: m.body.slice(quebra + 1) };
+          }
+        }
+        var alvos = Object.keys(porAlvo);
+        if (!alvos.length) return false;
+
+        /* 2) aplica na original. Mensagem nascida no GHL não tem altId (o alvo
+              casa com o `id`); mensagem espelhada do WhatsApp casa com o altId. */
+        var sumir = {};
+        var mexeu = false;
+        for (var a = 0; a < alvos.length; a++) {
+          var alvoId = alvos[a];
+          for (var j = 0; j < lista.length; j++) {
+            var orig = lista[j];
+            if (!orig) continue;
+            if (orig.id !== alvoId && orig.altId !== alvoId) continue;
+            orig.body = porAlvo[alvoId].texto + WA_MARCA;
+            mexeu = true;
+            /* achou o alvo → some com TODOS os bilhetes dele, não só o último */
+            for (var k = 0; k < lista.length; k++) {
+              var bil = lista[k];
+              if (bil && typeof bil.altId === 'string' &&
+                  bil.altId.indexOf('wa-edit-' + alvoId + '-') === 0) sumir[bil.id] = true;
+            }
+            break;
+          }
+        }
+        if (!mexeu) return false;
+
+        var limpa = lista.filter(function (m) { return !(m && sumir[m.id]); });
+        if (limpa.length !== lista.length) {
+          if (data.messages && Array.isArray(data.messages.messages)) data.messages.messages = limpa;
+          else data.messages = limpa;
+        }
+        return true;
+      };
+
+      /* Atalho barato: sem "wa-edit-" no corpo, nem faz JSON.parse. */
+      var waEditTexto = function (txt) {
+        if (!txt || typeof txt !== 'string' || txt.indexOf('wa-edit-') === -1) return txt;
+        var data;
+        try { data = JSON.parse(txt); } catch (e) { return txt; }
+        return waEditAplica(data) ? JSON.stringify(data) : txt;
+      };
+
+      /* fetch */
+      var wa_origFetch = window.fetch;
+      window.fetch = function (input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        var p = wa_origFetch.apply(this, arguments);
+        if (!WA_MSGS_RX.test(url)) return p;
+        return p.then(function (resp) {
+          if (!resp || !resp.ok) return resp;
+          return resp.clone().text().then(function (txt) {
+            var novo = waEditTexto(txt);
+            if (novo === txt) return resp;
+            return new Response(novo, {
+              status: resp.status, statusText: resp.statusText, headers: resp.headers
+            });
+          }).catch(function () { return resp; });
+        });
+      };
+
+      /* XHR (axios usa este caminho). Os getters são sombreados na INSTÂNCIA
+         antes do send — se fossem instalados num listener, o handler do app já
+         teria lido o valor cru primeiro. */
+      var wa_XHRopen = XMLHttpRequest.prototype.open;
+      var wa_XHRsend = XMLHttpRequest.prototype.send;
+      var dText = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText');
+      var dResp = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'response');
+      XMLHttpRequest.prototype.open = function (method, url) {
+        this.__waEditUrl = url;
+        return wa_XHRopen.apply(this, arguments);
+      };
+      XMLHttpRequest.prototype.send = function () {
+        try {
+          if (WA_MSGS_RX.test(this.__waEditUrl || '') && dText && dText.get && dResp && dResp.get) {
+            Object.defineProperty(this, 'responseText', {
+              configurable: true,
+              get: function () { return waEditTexto(dText.get.call(this)); }
+            });
+            Object.defineProperty(this, 'response', {
+              configurable: true,
+              get: function () {
+                var bruto = dResp.get.call(this);
+                if (typeof bruto === 'string') return waEditTexto(bruto);
+                if (bruto && typeof bruto === 'object') { try { waEditAplica(bruto); } catch (e) {} }
+                return bruto;
+              }
+            });
+          }
+        } catch (e) { /* qualquer tropeço → resposta crua, sem quebrar a tela */ }
+        return wa_XHRsend.apply(this, arguments);
+      };
+    }
+  } catch (e) {
+    console.warn('[SPARK-WA-EDIT] init falhou:', e);
+  }
+
   /* ── Module loader ──
      baseURL is derived from this script's src so forks deployed elsewhere
      still load their own modules. Modules are loaded async and set globals
