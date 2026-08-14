@@ -164,7 +164,14 @@
   try {
     if (localStorage.getItem('SPARK_WA_EDIT_RAW') !== '1') {
       var WA_MSGS_RX = /\/conversations\/[^/]+\/messages/;
-      var WA_EDIT_RX = /^wa-edit-(.+)-(\d+)$/;
+      /* Dois sufixos convivem, de propósito:
+           nós editamos  → "wa-edit-<alvo>-<Date.now()>"   (edições repetidas)
+           o contato edita → "wa-edit-<alvo>-<stanzaId>"   (id do WhatsApp, hex)
+         O de trás é o id do webhook, e é ele que torna o registro idempotente
+         quando o evento é reentregue — por isso NÃO exigimos dígitos aqui. O
+         `(.+)` é guloso: o grupo 2 fica sempre com o ÚLTIMO trecho, mesmo se o
+         alvo tiver hífen. */
+      var WA_EDIT_RX = /^wa-edit-(.+)-([^-]+)$/;
       var WA_MARCA = ' ✏️ editada';
 
       /* Dobra as edições no payload da conversa. Devolve true se mexeu.
@@ -188,7 +195,12 @@
           var quebra = m.body.indexOf('\n');
           if (quebra < 0) continue;
           var alvo = casou[1];
-          var carimbo = Number(casou[2]) || 0;
+          /* Ordenar por quê: o sufixo do NOSSO lado já é o relógio; o do lado do
+             contato é um stanzaId, que não ordena nada. Aí vale a data da própria
+             bolha, para que a última edição do contato ganhe da anterior. */
+          var carimbo = /^\d+$/.test(casou[2])
+            ? Number(casou[2])
+            : (Date.parse(m.dateAdded || m.dateUpdated || '') || 0);
           if (!porAlvo[alvo] || carimbo >= porAlvo[alvo].carimbo) {
             porAlvo[alvo] = { carimbo: carimbo, texto: m.body.slice(quebra + 1) };
           }

@@ -146,6 +146,38 @@ console.log("\n8) XHR responseType json: objeto mutado no lugar, e idempotente")
   ok("ler de novo não muda nada", JSON.stringify(b.messages.messages) === primeiro, b.messages.messages.map((m) => m.body));
 }
 
+/* O contato editando no celular vem por outro caminho (inbound.ts), e o sufixo
+   ali é o stanzaId do WhatsApp — hex, não relógio. Exigir dígitos deixava esta
+   thread com a bolha velha + o bilhete: o mesmo defeito, do outro lado. */
+console.log("\n10) contato editou no celular — sufixo é stanzaId, não carimbo");
+{
+  const nota = {
+    id: "nota-hex", altId: "wa-edit-3A77A3EE-3EB0C767D26B8F3A1B2C", direction: "inbound",
+    body: "✏️ Mensagem editada no WhatsApp — passou a valer:\namor mesmo",
+  };
+  const orig = { id: "ghl-9", altId: "3A77A3EE", direction: "inbound", body: "amor" };
+  const l = (await via(payload([nota, orig]))).messages.messages;
+  ok("dobrou", l.length === 1, l.length);
+  ok("texto novo na original", l[0] && l[0].body === "amor mesmo ✏️ editada", l[0] && l[0].body);
+}
+
+console.log("\n11) contato editou DUAS vezes — desempata pela data da bolha");
+{
+  const nota = (id, quando, texto) => ({
+    id, altId: `wa-edit-3B00FF-${id}`, direction: "inbound", dateAdded: quando,
+    body: `✏️ Mensagem editada no WhatsApp — passou a valer:\n${texto}`,
+  });
+  const orig = { id: "ghl-10", altId: "3B00FF", direction: "inbound", body: "v1" };
+  /* a mais nova vem ANTES na lista: sem a data, a ordem do array decidiria errado */
+  const l = (await via(payload([
+    nota("AAAA", "2026-08-14T03:00:00.000Z", "v3"),
+    nota("BBBB", "2026-08-14T02:00:00.000Z", "v2"),
+    orig,
+  ]))).messages.messages;
+  ok("sobra uma", l.length === 1, l.length);
+  ok("venceu a mais nova", l[0] && l[0].body === "v3 ✏️ editada", l[0] && l[0].body);
+}
+
 console.log("\n9) URL que não é de mensagens passa reto");
 {
   janela.__orig = async () => new Response(JSON.stringify({ wa: "wa-edit-nada" }), { status: 200 });
