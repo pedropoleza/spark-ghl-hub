@@ -208,33 +208,61 @@ console.log("\n13) payload embrulhado de outro jeito — acha a lista pelo conte
 /* O selo em miúdo roda DENTRO do React do GHL. Nó inserido no meio da árvore
    dele estoura a reconciliação, então a regra é: mexe no texto, marca o
    elemento, e NUNCA cria nó. É isto que este caso tranca. */
-console.log("\n14) selo vira ::after — texto limpo, atributo posto, nenhum nó criado");
-{
+const SENT = "​"; // a sentinela invisível (zero-width space) que o bundle usa
+function domSelo() {
+  // DOM de mentira que reflete parent.textContent do filho de texto e um
+  // querySelectorAll('[data-spark-editada]') de verdade sobre os elementos vivos.
   let inseriu = false;
-  const pai = (nome) => ({
-    nodeType: 1, __nome: nome, attrs: {},
-    setAttribute(k, v) { this.attrs[k] = v; },
-    appendChild() { inseriu = true; }, insertBefore() { inseriu = true; },
-    replaceChild() { inseriu = true; }, removeChild() { inseriu = true; },
-  });
-  const texto = (v, p) => ({ nodeType: 3, nodeValue: v, parentNode: p });
-
-  const bolha = pai("bolha");
-  const outra = pai("outra");
-  const nos = [texto("teste 2\n✏️ editada", bolha), texto("mensagem comum", outra)];
-
-  janela.document.body = pai("body");
-  janela.document.createTreeWalker = () => {
-    let i = 0;
-    return { nextNode: () => (i < nos.length ? nos[i++] : null) };
+  const registro = [];
+  const pai = (nome) => {
+    const el = {
+      nodeType: 1, __nome: nome, attrs: {}, _text: null,
+      get textContent() { return this._text ? this._text.nodeValue : ""; },
+      setAttribute(k, v) { this.attrs[k] = v; },
+      removeAttribute(k) { delete this.attrs[k]; },
+      appendChild() { inseriu = true; }, insertBefore() { inseriu = true; },
+      replaceChild() { inseriu = true; }, removeChild() { inseriu = true; },
+    };
+    registro.push(el);
+    return el;
   };
+  const texto = (v, p) => { const t = { nodeType: 3, nodeValue: v, parentNode: p }; p._text = t; return t; };
+  const walker = (nos) => () => { let i = 0; return { nextNode: () => (i < nos.length ? nos[i++] : null) }; };
+  janela.document.querySelectorAll = () => registro.filter((e) => "data-spark-editada" in e.attrs);
+  return { pai, texto, walker, marcou: () => inseriu, janela };
+}
+
+console.log("\n14) selo vira ::after — texto vira sentinela, atributo posto, nenhum nó criado");
+{
+  const d = domSelo();
+  const bolha = d.pai("bolha");
+  const outra = d.pai("outra");
+  const nos = [d.texto("teste 2\n✏️ editada", bolha), d.texto("mensagem comum", outra)];
+  janela.document.body = d.pai("body");
+  janela.document.createTreeWalker = d.walker(nos);
 
   ctx.window.__SPARK_WA_SELO();
 
-  ok("selo saiu do texto", nos[0].nodeValue === "teste 2", nos[0].nodeValue);
+  ok("marca crua saiu do texto", nos[0].nodeValue === "teste 2" + SENT, JSON.stringify(nos[0].nodeValue));
   ok("elemento marcado", bolha.attrs["data-spark-editada"] === "1", bolha.attrs);
-  ok("🔴 nenhum nó criado (React intacto)", inseriu === false);
-  ok("bolha sem selo não é tocada", nos[1].nodeValue === "mensagem comum" && !outra.attrs["data-spark-editada"]);
+  ok("🔴 nenhum nó criado (React intacto)", d.marcou() === false);
+  ok("bolha sem selo não é tocada", nos[1].nodeValue === "mensagem comum" && !("data-spark-editada" in outra.attrs));
+}
+
+console.log("\n15) 🔴 selo fantasma: nó reciclado pelo React perde o selo no próximo passo");
+{
+  const d = domSelo();
+  const bolha = d.pai("bolha");
+  const nos = [d.texto("v2\n✏️ editada", bolha)];
+  janela.document.body = d.pai("body");
+  janela.document.createTreeWalker = d.walker(nos);
+  ctx.window.__SPARK_WA_SELO();
+  ok("marcado no 1o passo", bolha.attrs["data-spark-editada"] === "1", bolha.attrs);
+  ok("idempotente: reler não duplica sentinela", (() => { ctx.window.__SPARK_WA_SELO(); return nos[0].nodeValue === "v2" + SENT; })(), JSON.stringify(nos[0].nodeValue));
+  // React RECICLA a bolha pra uma mensagem que NÃO foi editada:
+  nos[0].nodeValue = "mensagem nova, nao editada";
+  ctx.window.__SPARK_WA_SELO();
+  ok("selo removido do nó reciclado", !("data-spark-editada" in bolha.attrs), bolha.attrs);
 }
 
 console.log("\n9) URL que não é de mensagens passa reto");

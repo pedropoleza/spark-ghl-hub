@@ -308,8 +308,14 @@
           return resp.clone().text().then(function (txt) {
             var novo = waEditTexto(txt);
             if (novo === txt) return resp;
+            /* 🔴 O corpo mudou de tamanho: content-length herdado quebra o parse,
+               e se a original veio comprimida o content-encoding mente (nosso
+               corpo e texto plano). Tira os dois; o resto dos headers segue. */
+            var h = new Headers(resp.headers);
+            h.delete('content-length');
+            h.delete('content-encoding');
             return new Response(novo, {
-              status: resp.status, statusText: resp.statusText, headers: resp.headers
+              status: resp.status, statusText: resp.statusText, headers: h
             });
           }).catch(function () { return resp; });
         });
@@ -360,20 +366,40 @@
          nó estranho no meio da árvore dele estoura a reconciliação (removeChild
          de nó que ele não conhece). Por isso o selo sai do texto e volta como
          ::after, que é pintura, não DOM. */
+      /* Sentinela de largura ZERO: fica no texto no lugar da marca, invisível na
+         tela mas detectável no código. É ela que conserta o selo fantasma: o
+         React RECICLA o nó de uma mensagem editada pra outra que não é, e o
+         atributo ficava colado, mostrando "editada" numa bolha que nunca foi. */
+      var WA_SENTINELA = '​';
       var waSeloPassa = function () {
         if (!document.body || !document.createTreeWalker) return;
+        /* 1) RESET: quem está marcado mas não tem mais a sentinela nem a marca
+              crua no texto foi reciclado pra outro conteúdo → tira o selo. */
+        try {
+          var marcados = document.querySelectorAll('[data-spark-editada]');
+          for (var m = 0; m < marcados.length; m++) {
+            var el = marcados[m];
+            var t = el.textContent || '';
+            if (t.indexOf(WA_SENTINELA) === -1 && t.slice(-WA_MARCA.length) !== WA_MARCA) {
+              el.removeAttribute('data-spark-editada');
+            }
+          }
+        } catch (e) { /* querySelectorAll pode faltar em DOM de mentira - segue */ }
+        /* 2) SET: acha a marca crua, troca pela sentinela (invisível) e marca o
+              pai. A sentinela deixa o próximo passo saber que o selo continua
+              valendo mesmo com o texto visível já "limpo". */
         var it = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
         var achados = [];
         var n;
         while ((n = it.nextNode())) {
           var v = n.nodeValue;
-          if (v && v.length > WA_MARCA.length && v.slice(-WA_MARCA.length) === WA_MARCA) achados.push(n);
+          if (v && v.length >= WA_MARCA.length && v.slice(-WA_MARCA.length) === WA_MARCA) achados.push(n);
         }
         for (var i = 0; i < achados.length; i++) {
           var no = achados[i];
           var pai = no.parentNode;
           if (!pai || pai.nodeType !== 1) continue;
-          no.nodeValue = no.nodeValue.slice(0, -WA_MARCA.length);
+          no.nodeValue = no.nodeValue.slice(0, -WA_MARCA.length) + WA_SENTINELA;
           pai.setAttribute('data-spark-editada', '1');
         }
       };
