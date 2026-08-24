@@ -902,4 +902,13 @@
   zoomScript.src = __sparkBaseUrl + 'spark-zoom.js?v=1';
   document.head.appendChild(zoomScript);
 
+  /* ── Load Conversations Live (mensagem de WhatsApp aparece sem F5) ──
+     Carrega SEMPRE, não só quando a página abre no Conversations: o GHL é SPA,
+     e entrar na aba por navegação interna não recarrega este script. O módulo
+     dorme sozinho fora de uma conversa (não consulta nada) e o gate de conta
+     fica no OS (fail-closed): fora do piloto o sino responde 403. */
+  var liveScript = document.createElement('script');
+  liveScript.src = __sparkBaseUrl + 'spark-conversations-live.js?v=1';
+  document.head.appendChild(liveScript);
+
 })();
