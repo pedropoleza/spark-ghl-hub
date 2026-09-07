@@ -592,6 +592,22 @@ a[id="6656fbe08a310e28e65540b3"] { display: none !important; }
 #sidebar-v2[data-spark-account="NdzeZDCKa8NmcmwsCU8T"] .hl_nav-header > nav > a#sb_dashboard { display: none !important; }
 #sidebar-v2[data-spark-account="NdzeZDCKa8NmcmwsCU8T"] .hl_nav-header > nav > a[id="f077df9a-3363-44ff-a15e-c554081ed5a9"] { order: 0 !important; }
 
+/* ── Account: UPBHBX5RwcigLjECqvU8 (Eliane de Souza) ──
+   Mesmo arranjo da Vincit e da IES: esconde o dashboard padrão do GHL e sobe o
+   custom link do dashboard dela (ies-dashboard-flax.vercel.app/eliane) para a
+   posição 1.
+
+   O `order` PRECISA vir daqui, e não do `firstItem` do account-overrides.js: o
+   JS aplica `style.order` inline e sem `!important`, e a regra genérica
+   `a.custom-link { order: 18 !important }` ganha dele pela spec. Escopado por
+   [data-spark-account], que o JS carimba no #sidebar-v2 só quando a conta tem
+   entrada no account-overrides.js - por isso as duas metades são necessárias.
+
+   O id vai em a[id="..."] e nunca em a#...: id que começa com dígito é
+   descartado pelo parser, e já custou 158 de 160 regras num incidente. */
+#sidebar-v2[data-spark-account="UPBHBX5RwcigLjECqvU8"] .hl_nav-header > nav > a#sb_dashboard { display: none !important; }
+#sidebar-v2[data-spark-account="UPBHBX5RwcigLjECqvU8"] .hl_nav-header > nav > a[id="b0861389-f934-4ad8-827a-f2e42ca43828"] { order: 0 !important; }
+
 /* ── Rename "SMS" → "Whatsapp QR/SMS" in conversations channel trigger ──
    Scoped via :has(svg path[d^=...]) so the rename only triggers when the SMS
    chat-bubble icon is the active channel. Other channels (Email, WhatsApp,

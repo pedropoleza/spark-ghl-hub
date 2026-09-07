@@ -30,6 +30,14 @@
     'NdzeZDCKa8NmcmwsCU8T': {
       hide: ['sb_dashboard'],
       firstItem: 'f077df9a-3363-44ff-a15e-c554081ed5a9'
+    },
+    /* Eliane de Souza. O dashboard dela é ies-dashboard-flax.vercel.app/eliane,
+       embutido como custom menu link. Esta entrada existe sobretudo para o
+       loader carimbar data-spark-account no #sidebar-v2: sem o carimbo, o bloco
+       escopado no CSS (que é quem de fato esconde e reordena) nunca casa. */
+    'UPBHBX5RwcigLjECqvU8': {
+      hide: ['sb_dashboard'],
+      firstItem: 'b0861389-f934-4ad8-827a-f2e42ca43828'
     }
   };
 
