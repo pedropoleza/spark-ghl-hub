@@ -1657,9 +1657,15 @@
 
       // Regra de visibilidade por idade (Pedro 2026-06-23): conta > 30 dias = esconde.
       // Data do GHL (live); fallback no account_created_at salvo. Idade desconhecida = não esconde.
+      // Liberação manual (Pedro 2026-10-27): conta antiga que volta a usar o Spark ganha o widget
+      // até `liberado_ate` da linha em onboarding_progress, mesmo com mais de 30 dias. Passada a
+      // data, volta a valer a regra dos 30 dias. Sem linha não há liberação (o self-provision
+      // continua só para conta nova).
       var createdMs = getAccountCreatedMs();
       if (createdMs == null && progress && progress.account_created_at) createdMs = new Date(progress.account_created_at).getTime();
-      if (createdMs != null && (Date.now() - createdMs) > ONB_MAX_AGE_MS) return; // > 30 dias
+      var liberadoAte = progress && progress.liberado_ate ? new Date(progress.liberado_ate).getTime() : NaN;
+      var liberado = !isNaN(liberadoAte) && liberadoAte > Date.now();
+      if (!liberado && createdMs != null && (Date.now() - createdMs) > ONB_MAX_AGE_MS) return; // > 30 dias
 
       // Self-provision no 1o login (Pedro 2026-06-23): conta < 30 dias com SaaS ATIVO ganha o
       // widget NA HORA, sem esperar o cron diário. Plano lido do store do GHL. Idempotente:

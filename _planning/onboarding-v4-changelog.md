@@ -1,5 +1,16 @@
 # Onboarding v4 — changelog (rebuild enterprise)
 
+## 2026-10-27 — Liberação manual para conta antiga que volta (Pedro)
+
+Caso: Silvia Mendes (`GK7EVtzwwrwOhLrwPkCU`, conta de 07/06/2024) voltou ao Spark e o Pedro pediu o
+onboarding guiado para ela. A regra dos 30 dias escondia o widget de qualquer conta antiga, sem exceção.
+
+- Coluna nova `onboarding_progress.liberado_ate timestamptz` (projeto GHL Token), aplicada em 27/10.
+- `boot()`: com `liberado_ate` no futuro, a regra dos 30 dias não esconde o widget. Vencida a data, volta
+  a valer a regra. Sem linha não há liberação: o self-provision segue só para conta nova.
+- Liberar uma conta: inserir a linha com `plan`, `lang`, `account_created_at` real e
+  `liberado_ate = now() + interval '30 days'`. O widget só aparece com a sub-conta ATIVA no GHL.
+
 ## 2026-06-23 — Provisionamento automático (regra 30 dias) + auditoria de segurança
 
 Objetivo (Pedro): widget aparece populado em TODA conta < 30 dias (existentes + a serem criadas);
